@@ -89,10 +89,10 @@ By the end of this course, students will be able to:
 
 ## 📌 Assessment
 
-- **Lab Exercises** – 30%  
-- **Midterm Exam** – 20%  
-- **Final Project** – 40%  
-- **Participation & Quizzes** – 10%
+- **Lab Exercises** – 40%  
+- **Final Exam** – 20%  
+- **Final Project** – 20%  
+- **Participation & Quizzes** – 20%
 
 ---
 
@@ -107,15 +107,13 @@ By the end of this course, students will be able to:
 
 ## 📖 References
 
-1. Jack Ganssle, *The Art of Designing Embedded Systems*, 3rd ed.  
-2. Muhammad Ali Mazidi et al., *AVR Microcontroller and Embedded Systems*.  
-3. Jonathan Valvano, *Embedded Systems: Real-Time Interfacing to the MSP432 Microcontroller*.  
-4. IoT cloud platform documentation (AWS, Azure, GCP).  
+1. Jack Ganssle, *The Art of Designing Embedded Systems*, 3rd ed., Newnes, 2014.  
+2. Muhammad Ali Mazidi, Sarmad Naimi, and Sepehr Naimi, *AVR Microcontroller and Embedded Systems: Using Assembly and C*, Pearson, 2010.  
+3. Jonathan W. Valvano, *Embedded Systems: Real-Time Interfacing to the MSP432 Microcontroller*, 4th ed., CreateSpace, 2017.  
+4. Neil Kolban, *Kolban's Book on ESP32*, Leanpub, 2023.  
+5. Pong P. Chu, *FPGA Prototyping by Verilog Examples: Xilinx MicroBlaze MCS SoC*, Wiley, 2017.  
+6. Nick O’Leary and Dave Conway-Jones, *Node-RED: Fundamentals and Practical IoT Projects*, Leanpub, 2022.  
+7. IoT cloud platform documentation: AWS IoT Core, Azure IoT Hub, Google Cloud IoT.  
 
 ---
 
-**Instructor:** _[Your Name]_  
-**Department of Electrical Engineering / Computer Engineering_  
-**Institution:** _[Your University]_  
-
----
