@@ -119,8 +119,7 @@ Include in your main program for cleaner, reusable code.
 ## 7. Exercises
 1. Implement a PWM LED driver.
 2. Add debounce logic to the button driver.
-3. Port drivers to a different microcontroller platform.
-4. Use interrupts for button handling.
+3. Use interrupts for button handling.
 
 ---
 
