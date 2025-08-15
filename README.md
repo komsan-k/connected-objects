@@ -13,7 +13,7 @@ This course introduces the design and development of intelligent connected objec
 
 - **Embedded Programming**  
   - C/C++ for MCUs  
-  - HDL (Verilog/VHDL) for FPGA  
+  - Verilog HDL for FPGA  
   - Toolchains, compilers, and synthesis
 
 - **Interrupts & Scheduling**  
