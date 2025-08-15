@@ -123,6 +123,38 @@ void loop() {
 
 ---
 
+
+
+## 6. Sleep Mode Implementation
+To improve power efficiency, the ESP32 can be placed into various sleep modes (light sleep or deep sleep) and woken up by external interrupts or timers.
+
+### Example: Deep Sleep with External Wake-up
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000); // Allow serial monitor to start
+
+  Serial.println("Going to deep sleep for 10 seconds...");
+  esp_sleep_enable_timer_wakeup(10 * 1000000); // 10 seconds
+  esp_deep_sleep_start();
+}
+
+void loop() {
+  // Will not be called until device wakes up
+}
+```
+
+**Wake Sources**:
+- **Timer wake-up**: Automatically wakes after a set interval.
+- **External GPIO wake-up**: Wake when a pin changes state.
+- **Touch wake-up**: Trigger from capacitive touch pads.
+
+### Notes
+- Deep sleep drastically reduces current draw (tens of microamps).
+- All volatile data is lost; store important data in RTC memory if needed.
+
 ## 6. Exercises
 1. Modify the **external interrupt** to count button presses instead of just printing a message.
 2. Use a **timer interrupt** to sample an analog sensor at 100 Hz.
@@ -139,4 +171,3 @@ In this lab, you learned how to:
 - Apply a **watchdog timer** to enhance system robustness.
 
 Interrupt-driven programming increases efficiency by allowing the processor to remain idle until an event occurs, while watchdog timers safeguard against software hangs. These are critical skills for building reliable embedded systems.
-
