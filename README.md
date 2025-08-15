@@ -72,16 +72,17 @@ By the end of this course, students will be able to:
 
 | Week | Topic | Lab / Project Focus |
 |------|-------|---------------------|
-| 1 | MCU & FPGA introduction | Hello World on MCU and FPGA |
+| 1 | MCU & FPGA introduction | Hello World on ESP32 (MCU) and FPGA with respective toolchains |
 | 2 | Embedded programming basics | GPIO control & LED blinking |
 | 3 | Interrupt handling | Push-button interrupt counter |
 | 4 | Scheduler concepts | Cooperative scheduler implementation |
 | 5 | Physical interfaces | I²C sensor integration |
 | 6 | IoT architecture | Device-to-cloud data pipeline |
-| 7 | IoT networking | MQTT-based communication |
-| 8 | Cloud integration | AWS IoT Core connection |
-| 9 | Data visualization | Grafana dashboard |
-| 10 | Analytics basics | Data trend detection |
+| 7 | IoT networking | MQTT-based communication using Node-RED |
+| 8 | Cloud integration | AWS IoT Core connection via Node-RED |
+| 9 | Data visualization | Node-RED dashboard for real-time monitoring |
+| 10 | Analytics basics | Data trend detection and processing in Node-RED |
+
 | 11–14 | Final project development | End-to-end IoT system |
 
 ---
