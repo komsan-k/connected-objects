@@ -28,7 +28,7 @@ A **device driver** is a software component that enables the operating system or
 ## 3. Lab Setup
 
 **Hardware:**
-- ESP32 DevKit or STM32 Nucleo board
+- ESP32 DevKit board
 - Onboard LED (GPIO2 for ESP32 or GPIO13 for STM32 Nucleo)
 - Push button (optional, for input driver)
 - USB cable
