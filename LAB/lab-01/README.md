@@ -24,9 +24,10 @@ The **Network Time Protocol (NTP)** allows devices to synchronize their clocks o
 
 ---
 
-## 3. Tasks
+## 3. Tasks & Code
 
 ### Part A — Basic Bring-Up
+**Tasks:**
 1. Install the **ESP32** board package in Arduino IDE via Boards Manager.
 2. Select your ESP32 board (e.g., *ESP32 Dev Module*) and correct COM port.
 3. Write a minimal sketch to:
@@ -34,12 +35,55 @@ The **Network Time Protocol (NTP)** allows devices to synchronize their clocks o
    - Blink the onboard LED on **GPIO 2**.
    - Print a startup banner to Serial Monitor.
 
+**Code:**
+```cpp
+const int LED_PIN = 2;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_PIN, OUTPUT);
+  Serial.println("ESP32 Bring-Up Demo");
+}
+
+void loop() {
+  digitalWrite(LED_PIN, HIGH); delay(500);
+  digitalWrite(LED_PIN, LOW);  delay(500);
+}
+```
+
+---
+
 ### Part B — Connect to Wi-Fi
+**Tasks:**
 1. Add your Wi-Fi SSID and password.
 2. Connect until `WL_CONNECTED`.
 3. Print the assigned **local IP address**.
 
+**Code:**
+```cpp
+#include <WiFi.h>
+
+const char* ssid     = "YOUR_SSID";
+const char* password = "YOUR_PASS";
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.printf("\nWi-Fi connected, IP: %s\n", WiFi.localIP().toString().c_str());
+}
+
+void loop() {}
+```
+
+---
+
 ### Part C — Get Time from NTP
+**Tasks:**
 1. Use `configTime()` to configure:
    - **GMT offset** in seconds.
    - **Daylight Saving Time (DST)** offset in seconds.
@@ -47,24 +91,17 @@ The **Network Time Protocol (NTP)** allows devices to synchronize their clocks o
 2. Wait for time synchronization.
 3. Use `getLocalTime()` to retrieve time and display in `YYYY-MM-DD HH:MM:SS` format.
 
----
-
-## 4. Full Code Example
-
+**Code:**
 ```cpp
 #include <WiFi.h>
 #include <time.h>
 
-// Wi-Fi credentials
 const char* ssid     = "YOUR_SSID";
 const char* password = "YOUR_PASS";
 
-// NTP settings
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 7 * 3600;   // GMT+7 for Thailand
 const int   daylightOffset_sec = 0;     // No DST
-
-const int LED_PIN = 2;
 
 void printLocalTime() {
   struct tm timeinfo;
@@ -83,19 +120,13 @@ void printLocalTime() {
 
 void setup() {
   Serial.begin(115200);
-  pinMode(LED_PIN, OUTPUT);
-  Serial.println("ESP32 Bring-Up & NTP Demo");
-
-  // Connect to Wi-Fi
   WiFi.begin(ssid, password);
-  Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  Serial.printf("\nWi-Fi connected, IP: %s\n", WiFi.localIP().toString().c_str());
+  Serial.println("\nWi-Fi connected");
 
-  // Init and get time
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   Serial.println("Synchronizing time...");
   delay(2000);
@@ -103,26 +134,18 @@ void setup() {
 }
 
 void loop() {
-  // Blink LED
-  digitalWrite(LED_PIN, HIGH); delay(500);
-  digitalWrite(LED_PIN, LOW);  delay(500);
-
-  // Print current time every 5 seconds
-  static unsigned long lastPrint = 0;
-  if (millis() - lastPrint >= 5000) {
-    printLocalTime();
-    lastPrint = millis();
-  }
+  delay(5000);
+  printLocalTime();
 }
 ```
 
 ---
 
-## 5. Expected Output
+## 4. Expected Output
 
 **Serial Monitor:**
 ```
-ESP32 Bring-Up & NTP Demo
+ESP32 Bring-Up Demo
 Connecting to Wi-Fi...
 Wi-Fi connected, IP: 192.168.1.105
 Synchronizing time...
@@ -137,7 +160,7 @@ Synchronizing time...
 
 ---
 
-## 6. Discussion Questions
+## 5. Discussion Questions
 1. Why is accurate time important in IoT systems?
 2. How does NTP improve data consistency when multiple devices log events?
 3. What happens if the device cannot reach the NTP server?
@@ -146,7 +169,7 @@ Synchronizing time...
 
 ---
 
-## 7. Exercises
+## 6. Exercises
 1. Change the blink pattern based on whether seconds are **even** or **odd**.
 2. Display the **day of the week** along with the date.
 3. Print the uptime in addition to the current time.
@@ -155,7 +178,6 @@ Synchronizing time...
 
 ---
 
-## 8. Conclusion
+## 7. Conclusion
 This lab combined **basic ESP32 bring-up** with **network time synchronization**, forming the foundation for time-aware IoT applications.  
 Future labs can build on this by timestamping sensor data, synchronizing events across multiple devices, or triggering actions based on schedules.
-
