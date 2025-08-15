@@ -79,7 +79,7 @@ By the end of this course, students will be able to:
 | 5 | Physical interfaces | I²C sensor integration |
 | 6 | IoT architecture | Device-to-cloud data pipeline |
 | 7 | IoT networking | MQTT-based communication using Node-RED |
-| 8 | Cloud integration | AWS IoT Core connection via Node-RED |
+| 8 | Cloud integration | IoT Core connection via Node-RED |
 | 9 | Data visualization | Node-RED dashboard for real-time monitoring |
 | 10 | Analytics basics | Data trend detection and processing in Node-RED |
 
