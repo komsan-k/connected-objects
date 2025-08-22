@@ -13,29 +13,124 @@ This repository provides two Arduino sketches for **ESP32 Wi-Fi analysis and dia
 This sketch connects the ESP32 to Wi-Fi, continuously prints **RSSI (dBm)** values, calculates a moving average, classifies signal quality, and uses an LED to indicate signal strength.  
 It also implements **auto-reconnect with exponential backoff** if the connection drops.
 
-### Features
-- Connects to Wi-Fi using provided SSID and password.  
-- Prints RSSI every second with moving average smoothing.  
-- Signal quality classification: *excellent, very good, good, fair, weak, very weak*.  
-- LED (GPIO 2) blinks faster for strong signals, slower for weak ones.  
-- Auto-reconnect logic with backoff (1s → 2s → 4s → up to 16s).  
+### Code
+```cpp
+#include <WiFi.h>
 
-### Example Serial Output
+const char* SSID = "YOUR_SSID";
+const char* PASS = "YOUR_PASS";
+
+const int LED_PIN = 2;          // Change if needed
+const uint16_t SAMPLE_MS = 1000; // Telemetry interval
+const uint8_t  MA_WINDOW = 10;   // Moving average window size
+
+// Backoff for reconnect (ms)
+uint32_t reconnectDelayMs = 1000;
+const uint32_t RECONNECT_MAX_MS = 16000;
+
+// Moving average buffer
+long rssiBuf[MA_WINDOW];
+uint8_t rIdx = 0;
+uint8_t rCount = 0;
+
+unsigned long lastSample = 0;
+unsigned long lastBlink = 0;
+uint16_t blinkInterval = 600; // adjusted by signal quality
+bool ledState = false;
+
+String rssiQuality(long rssi) {
+  if (rssi >= -50) return "excellent";
+  if (rssi >= -60) return "very good";
+  if (rssi >= -67) return "good";
+  if (rssi >= -75) return "fair";
+  if (rssi >= -80) return "weak";
+  return "very weak";
+}
+
+uint16_t qualityToBlink(long rssi) {
+  // Map RSSI (stronger -> faster blink)
+  // -40 dBm -> 150 ms ; -90 dBm -> 900 ms (clamped)
+  long cl = constrain(rssi, -90, -40);
+  return (uint16_t) map(cl, -90, -40, 900, 150);
+}
+
+long addToMA(long v) {
+  rssiBuf[rIdx] = v;
+  rIdx = (rIdx + 1) % MA_WINDOW;
+  if (rCount < MA_WINDOW) rCount++;
+
+  long sum = 0;
+  for (uint8_t i = 0; i < rCount; i++) sum += rssiBuf[i];
+  return sum / (long)rCount;
+}
+
+void connectWiFi() {
+  Serial.printf("Connecting to SSID: %s\n", SSID);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(SSID, PASS);
+
+  uint32_t t0 = millis();
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(300);
+    Serial.print(".");
+    if (millis() - t0 > 20000) { // 20 s timeout
+      Serial.println("\nConnection timeout, retrying...");
+      WiFi.disconnect(true);
+      delay(reconnectDelayMs);
+      reconnectDelayMs = min(reconnectDelayMs * 2, RECONNECT_MAX_MS);
+      t0 = millis();
+      WiFi.begin(SSID, PASS);
+    }
+  }
+  reconnectDelayMs = 1000; // reset backoff
+  Serial.printf("\nConnected. IP: %s  RSSI: %ld dBm  CH: %d\n",
+                WiFi.localIP().toString().c_str(),
+                WiFi.RSSI(),
+                WiFi.channel());
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(100);
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+
+  connectWiFi();
+  Serial.println("Started RSSI monitor.");
+  Serial.println("Columns: millis,rssi_dbm,rssi_avg_dbm,quality,channel");
+}
+
+void loop() {
+  // Maintain Wi-Fi
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Wi-Fi lost. Reconnecting...");
+    connectWiFi();
+  }
+
+  // Sample RSSI each SAMPLE_MS
+  unsigned long now = millis();
+  if (now - lastSample >= SAMPLE_MS) {
+    lastSample = now;
+
+    long rssi = WiFi.RSSI(); // dBm
+    long avg = addToMA(rssi);
+    String q = rssiQuality(avg);
+
+    // adjust LED blink by signal
+    blinkInterval = qualityToBlink(avg);
+
+    Serial.printf("%lu,%ld,%ld,%s,%d\n",
+                  now, rssi, avg, q.c_str(), WiFi.channel());
+  }
+
+  // Blink LED according to quality
+  if (now - lastBlink >= blinkInterval) {
+    lastBlink = now;
+    ledState = !ledState;
+    digitalWrite(LED_PIN, ledState ? HIGH : LOW);
+  }
+}
 ```
-millis,rssi_dbm,rssi_avg_dbm,quality,channel
-10234,-52,-55,very good,6
-11234,-53,-54,very good,6
-12234,-70,-60,good,6
-```
-
-### LED Blink Mapping
-- **-40 dBm → 150 ms blink** (very strong)  
-- **-90 dBm → 900 ms blink** (very weak)  
-
-### Usage Notes
-- Replace `YOUR_SSID` and `YOUR_PASS` with Wi-Fi credentials.  
-- Change `LED_PIN` if using a different LED.  
-- Open Serial Monitor/Plotter at 115200 baud to view logs.  
 
 ---
 
@@ -45,63 +140,106 @@ millis,rssi_dbm,rssi_avg_dbm,quality,channel
 This sketch scans nearby Wi-Fi networks, prints details (SSID, RSSI, channel, encryption), and builds a **channel histogram**.  
 It then suggests the best channel among **1, 6, and 11** for 2.4 GHz networks.
 
-### Features
-- Scans all nearby access points.  
-- Displays SSID, RSSI, channel, and encryption type.  
-- Calculates per-channel stats (AP count and average RSSI).  
-- Prints a histogram to visualize congestion.  
-- Suggests the cleanest channel (1, 6, or 11).  
+### Code
+```cpp
+#include <WiFi.h>
 
-### Example Serial Output
+struct ChanStat {
+  int count = 0;
+  long rssiSum = 0;
+};
+
+void printEncryptionType(wifi_auth_mode_t t) {
+  switch (t) {
+    case WIFI_AUTH_OPEN:         Serial.print("OPEN"); break;
+    case WIFI_AUTH_WEP:          Serial.print("WEP"); break;
+    case WIFI_AUTH_WPA_PSK:      Serial.print("WPA_PSK"); break;
+    case WIFI_AUTH_WPA2_PSK:     Serial.print("WPA2_PSK"); break;
+    case WIFI_AUTH_WPA_WPA2_PSK: Serial.print("WPA_WPA2_PSK"); break;
+    case WIFI_AUTH_WPA2_ENTERPRISE: Serial.print("WPA2_ENT"); break;
+    case WIFI_AUTH_WPA3_PSK:     Serial.print("WPA3_PSK"); break;
+    default:                     Serial.print("UNK"); break;
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(100);
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect(true);
+  delay(200);
+
+  Serial.println("Scanning Wi-Fi networks...");
+  int n = WiFi.scanNetworks(/*async=*/false, /*hidden=*/true);
+  if (n <= 0) {
+    Serial.println("No networks found.");
+    return;
+  }
+
+  Serial.printf("Found %d networks\n", n);
+  Serial.println("Idx,SSID,RSSI(dBm),Channel,Encryption");
+
+  ChanStat cs[15 + 1]; // channels 1..14, index safe
+
+  for (int i = 0; i < n; ++i) {
+    String ssid = WiFi.SSID(i);
+    int32_t rssi = WiFi.RSSI(i);
+    int32_t ch   = WiFi.channel(i);
+    wifi_auth_mode_t enc = WiFi.encryptionType(i);
+
+    Serial.printf("%d,%s,%d,%d,", i, ssid.c_str(), (int)rssi, (int)ch);
+    printEncryptionType(enc);
+    Serial.println();
+
+    if (ch >= 1 && ch <= 14) {
+      cs[ch].count++;
+      cs[ch].rssiSum += rssi;
+    }
+  }
+
+  Serial.println("\nChannel histogram (AP count / avg RSSI):");
+  for (int ch = 1; ch <= 14; ch++) {
+    if (cs[ch].count > 0) {
+      long avg = cs[ch].rssiSum / cs[ch].count;
+      Serial.printf("Ch%2d: APs=%d, avgRSSI=%ld dBm  ", ch, cs[ch].count, avg);
+      // simple bar by count
+      for (int k = 0; k < cs[ch].count && k < 40; k++) Serial.print('#');
+      Serial.println();
+    }
+  }
+
+  // Suggest among 1/6/11 the one with fewest APs (tie-breaker by weakest avg RSSI)
+  int cand[3] = {1, 6, 11};
+  int best = cand[0];
+  for (int i = 1; i < 3; i++) {
+    int ch = cand[i];
+    if (cs[ch].count < cs[best].count) best = ch;
+    else if (cs[ch].count == cs[best].count) {
+      long a = (cs[best].count ? cs[best].rssiSum / cs[best].count : -100);
+      long b = (cs[ch].count ? cs[ch].rssiSum / cs[ch].count : -100);
+      if (b < a) best = ch;
+    }
+  }
+  Serial.printf("\nSuggested 2.4 GHz channel (1/6/11): %d\n", best);
+}
+
+void loop() {
+  // Nothing; single-run survey. Press reset to rescan.
+}
 ```
-Found 8 networks
-Idx,SSID,RSSI(dBm),Channel,Encryption
-0,HomeWiFi,-42,6,WPA2_PSK
-1,CoffeeShopWiFi,-78,1,OPEN
-...
-
-Channel histogram (AP count / avg RSSI):
-Ch  1: APs=2, avgRSSI=-72 dBm  ##
-Ch  6: APs=4, avgRSSI=-55 dBm  ####
-Ch 11: APs=1, avgRSSI=-80 dBm  #
-
-Suggested 2.4 GHz channel (1/6/11): 11
-```
-
-### Usage Notes
-- Run the sketch and open Serial Monitor at 115200 baud.  
-- Press **RESET** to rescan networks.  
-- Run this first to find the optimal router channel before deploying your ESP32 project.  
 
 ---
 
-## 3. Practical Workflow
-
-1. **Run `ESP32_WiFi_SiteSurvey.ino`**  
-   - Identify the least congested channel (1, 6, or 11).  
-   - Configure your router to that channel.  
-
-2. **Run `ESP32_RSSI_Monitor.ino`**  
-   - Monitor Wi-Fi stability and signal quality over time.  
-   - Use LED blink speed and Serial logs for real-time feedback.  
-
----
-
-## 4. Notes & Tips
-- Always replace `YOUR_SSID` and `YOUR_PASS` in the code.  
-- Use Serial Plotter or log RSSI values to MQTT/Node-RED for visualization.  
-- If your ESP32 signal is weak:
-  - Use boards with **external antenna connectors** (e.g., ESP32-WROOM-32U).  
-  - Place ESP32 away from metallic objects and interference sources.  
-  - Consider mesh Wi-Fi, Ethernet PHY, or alternative protocols like **LoRa** or **ESP-NOW**.  
+## 3. Notes & Tips
+- Replace `YOUR_SSID` and `YOUR_PASS` before uploading.  
+- Update `LED_PIN` if your ESP32 uses a different onboard LED.  
+- Use the **Site Survey** sketch first to choose a better router channel.  
+- Use the **RSSI Monitor** sketch to validate placement and connectivity.  
 
 ---
 
 ## ✅ Summary
 These tools allow ESP32 developers to:  
-- **Monitor** signal quality with real-time logging and LED feedback.  
-- **Survey** Wi-Fi environments to optimize channel selection.  
-- **Improve** connectivity stability with retry logic and better placement.  
-
-By combining both sketches, you can significantly enhance ESP32 Wi-Fi reliability in real-world deployments.
-
+- **Monitor** Wi-Fi quality with real-time RSSI logging and LED feedback.  
+- **Survey** nearby networks to optimize channel selection.  
+- **Improve** connection reliability with auto-reconnect and smarter deployment.
