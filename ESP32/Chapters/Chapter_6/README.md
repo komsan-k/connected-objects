@@ -234,3 +234,157 @@ I²S mic → 16 kHz mono → 30 ms frames → MFCC (ESP-DSP) → stack ~1 s → 
 
 ---
 
+# With Code
+
+This chapter shows how to bring **TinyML models onto ESP32** using Arduino sketches.  
+We cover probing hardware, integrating TensorFlow Lite Micro (TFLM) / EloquentTinyML,  
+designing feature pipelines, scheduling across cores, power-saving, and deployment tips.
+
+---
+
+## 1) Hardware Probe (chip, RAM, PSRAM)
+
+```cpp
+// 1-hw_probe.ino
+#include <Arduino.h>
+extern "C" {
+  uint32_t esp_get_free_heap_size(void);
+  uint32_t esp_get_free_internal_heap(void);
+}
+void setup() {
+  Serial.begin(115200);
+  delay(200);
+  Serial.printf("Chip rev: %d\n", ESP.getChipRevision());
+  Serial.printf("CPU MHz: %d  (APB: %d)\n", ESP.getCpuFreqMHz(), ESP.getApbFrequency()/1000000);
+  Serial.printf("Cores: %d\n", xPortGetCoreID()+1);
+  Serial.printf("Heap free: %u bytes\n", esp_get_free_heap_size());
+#ifdef BOARD_HAS_PSRAM
+  if (psramFound()) {
+    Serial.printf("PSRAM found: YES, size ~%u bytes\n", ESP.getPsramSize());
+  } else {
+    Serial.println("PSRAM found: NO");
+  }
+#else
+  Serial.println("PSRAM compile flag not enabled for this board.");
+#endif
+}
+void loop() {}
+```
+
+---
+
+## 2) Software Stack — Minimal TFLM Skeleton
+
+```cpp
+// 2-tflm_minimal.ino
+#include <EloquentTinyML.h>
+#include <Arduino.h>
+
+#include <cstdint>
+const unsigned char model_tflite[] = { 0x20,0x00,0x00,0x00 /* ... */ };
+const size_t model_tflite_len = sizeof(model_tflite);
+
+#define IN  3
+#define OUT 2
+#define ARENA (40*1024)
+Eloquent::TinyML::TfLite<IN, OUT, ARENA> ml;
+
+void setup(){
+  Serial.begin(115200);
+  if (!ml.begin(model_tflite, model_tflite_len)) {
+    Serial.println("TFLM init failed");
+    while(true) delay(1000);
+  }
+  Serial.println("TFLM ready");
+}
+void loop(){
+  float x[IN] = {0.1, 0.2, 0.3};
+  float y[OUT];
+  ml.predict(x, y);
+  Serial.printf("y[0]=%.3f y[1]=%.3f\n", y[0], y[1]);
+  delay(1000);
+}
+```
+
+---
+
+## 3) TFLM Ops Resolver Skeleton
+
+```cpp
+// 3-ops_resolver_skeleton.ino
+#include <Arduino.h>
+#include "tensorflow/lite/micro/all_ops_resolver.h"
+#include "tensorflow/lite/micro/micro_interpreter.h"
+#include "tensorflow/lite/schema/schema_generated.h"
+#include "tensorflow/lite/version.h"
+#include "model_bytes.h"
+
+constexpr int kArenaSize = 60 * 1024;
+static uint8_t tensor_arena[kArenaSize];
+
+void setup(){
+  Serial.begin(115200);
+  const tflite::Model* model = tflite::GetModel(model_tflite);
+  if (model->version() != TFLITE_SCHEMA_VERSION) {
+    Serial.println("Model schema mismatch");
+    while(true) delay(1000);
+  }
+  static tflite::AllOpsResolver resolver;
+  static tflite::MicroInterpreter interpreter(model, resolver, tensor_arena, kArenaSize);
+  if (interpreter.AllocateTensors() != kTfLiteOk){
+    Serial.println("AllocateTensors failed");
+    while(true) delay(1000);
+  }
+  Serial.println("Interpreter ready");
+}
+void loop(){ delay(1000); }
+```
+
+---
+
+## 4) Data → Features (Ring Buffer Example)
+
+```cpp
+// 4-window_features.ino
+#include <Wire.h>
+#define MPU 0x68
+const int WIN = 100;
+float axBuf[WIN], ayBuf[WIN], azBuf[WIN];
+int wi = 0;
+
+void mpuWrite(uint8_t r, uint8_t v){ Wire.beginTransmission(MPU); Wire.write(r); Wire.write(v); Wire.endTransmission(); }
+void mpuReadAccel(int16_t &ax, int16_t &ay, int16_t &az){
+  Wire.beginTransmission(MPU); Wire.write(0x3B); Wire.endTransmission(false);
+  Wire.requestFrom(MPU,6);
+  ax=(Wire.read()<<8)|Wire.read(); ay=(Wire.read()<<8)|Wire.read(); az=(Wire.read()<<8)|Wire.read();
+}
+void setup(){
+  Serial.begin(115200); Wire.begin();
+  mpuWrite(0x6B,0x00);
+  mpuWrite(0x1C,0x00);
+}
+void loop(){
+  int16_t axr,ayr,azr; mpuReadAccel(axr,ayr,azr);
+  float ax=axr/16384.0, ay=ayr/16384.0, az=azr/16384.0;
+  axBuf[wi]=ax; ayBuf[wi]=ay; azBuf[wi]=az; wi=(wi+1)%WIN;
+
+  static uint32_t t0=millis();
+  if (millis()-t0>=1000){
+    t0=millis();
+    float meanx=0, meany=0, meanz=0;
+    for(int i=0;i<WIN;i++){ meanx+=axBuf[i]; meany+=ayBuf[i]; meanz+=azBuf[i]; }
+    meanx/=WIN; meany/=WIN; meanz/=WIN;
+    float sx=0,sy=0,sz=0;
+    for(int i=0;i<WIN;i++){ sx+=sq(axBuf[i]-meanx); sy+=sq(ayBuf[i]-meany); sz+=sq(azBuf[i]-meanz); }
+    float stdx=sqrtf(sx/WIN), stdy=sqrtf(sy/WIN), stdz=sqrtf(sz/WIN);
+    Serial.printf("feat: mean(%.3f,%.3f,%.3f) std(%.3f,%.3f,%.3f)\n",meanx,meany,meanz,stdx,stdy,stdz);
+  }
+  delay(10);
+}
+```
+
+---
+
+// (Rest of the sections continue...)
+
+
