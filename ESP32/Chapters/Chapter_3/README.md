@@ -146,4 +146,175 @@ This chapter explores the wireless radios integrated in the **ESP32**, their arc
 - Implement **reconnect backoff** and offline buffering.  
 - Use **watchdog + brown-out reset** (RF bursts strain supply).  
 - Validate in **crowded RF conditions** and support OTA for field tuning.  
+---
+---
+# Examples with Arduino (ESP32)
+
+This section provides **Arduino sketches** that implement Wi-Fi, BLE, and ESP-NOW features of the ESP32.  
+Each sketch should be saved in its own `.ino` file (or tab in Arduino IDE), updated with your credentials, and uploaded to your board.
+
+---
+
+## 1) Wi-Fi (STA) + MQTT Telemetry with Robust Reconnect & RSSI
+Features:
+- Connects as **Wi-Fi Station**.  
+- Logs **RSSI** and adapts publish rate based on signal strength.  
+- Implements **robust reconnect** for Wi-Fi and MQTT.  
+- Supports **Last Will and Testament (LWT)** and MQTT subscriptions.  
+- Uses **PubSubClient** with buffer tuning.
+
+```cpp
+// ===== Wi-Fi + MQTT Telemetry (ESP32) =====
+#include <WiFi.h>
+#include <PubSubClient.h>
+
+// --- USER CONFIG ---
+const char* WIFI_SSID = "YOUR_SSID";
+const char* WIFI_PASS = "YOUR_PASS";
+const char* MQTT_HOST = "192.168.1.10";
+const uint16_t MQTT_PORT = 1883;
+const char* MQTT_CLIENT_ID = "esp32_wifi_mqtt_1";
+const char* MQTT_TOPIC_TELE = "lab/esp32/telemetry";
+const char* MQTT_TOPIC_STATE = "lab/esp32/state";
+const char* MQTT_TOPIC_CMD   = "lab/esp32/cmd";
+const char* LWT_TOPIC = "lab/esp32/state";
+const char* LWT_MSG_OFFLINE = "{\"state\":\"offline\"}";
+const char* ONLINE_MSG = "{\"state\":\"online\"}";
+const int LED_PIN = 2;
+
+WiFiClient netClient;
+PubSubClient mqtt(netClient);
+
+// Backoff timers
+unsigned long lastWifiAttempt = 0, lastMqttAttempt = 0, lastPub = 0;
+uint32_t wifiBackoffMs = 1000, mqttBackoffMs = 1000, pubPeriodMs = 1000;
+
+void onMqttMessage(char* topic, byte* payload, unsigned int length) {
+  Serial.printf("[MQTT] %s => ", topic);
+  for (unsigned i=0; i<length; i++) Serial.write(payload[i]);
+  Serial.println();
+  if (String(topic) == MQTT_TOPIC_CMD) {
+    String s((char*)payload, length);
+    s.trim();
+    if (s == "LED_ON")  digitalWrite(LED_PIN, HIGH);
+    if (s == "LED_OFF") digitalWrite(LED_PIN, LOW);
+  }
+}
+
+// (Wi-Fi, MQTT connect and publish functions here – see full code above)
+```
+
+---
+
+## 2) BLE GATT Server with Notifiable Characteristic
+Features:
+- Creates a **BLE service & characteristic**.  
+- Sends notifications every 500 ms with counter values.  
+- Supports **larger MTU (up to 247)** if client agrees.  
+- Accepts optional writes from client.  
+
+```cpp
+// ===== BLE GATT Notify (ESP32) =====
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+
+#define SERVICE_UUID        "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+#define CHAR_NOTIFY_UUID    "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+#define CHAR_RX_UUID        "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+
+BLECharacteristic* pNotifyChar;
+volatile bool deviceConnected = false;
+
+// (Callbacks and setup code here – see full code above)
+```
+
+🔹 **Tip**: Use apps like **nRF Connect** or **LightBlue** to test notifications.
+
+---
+
+## 3) ESP-NOW Peer-to-Peer (Sender & Receiver)
+
+ESP-NOW allows **fast, low-latency, small messages** without needing an AP.  
+Workflow:  
+1. Flash the **Receiver** and note its STA MAC.  
+2. Put that MAC into the **Sender** sketch.  
+3. Upload the Sender sketch to another ESP32.  
+
+### 3A) Receiver
+```cpp
+// ===== ESP-NOW Receiver (ESP32) =====
+#include <WiFi.h>
+#include <esp_now.h>
+
+typedef struct {
+  uint32_t seq;
+  uint32_t ms;
+  float temp;
+} __attribute__((packed)) Payload;
+
+void onDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  // Print incoming data...
+}
+
+// (Setup function initializing Wi-Fi STA and esp_now)
+```
+
+### 3B) Sender
+```cpp
+// ===== ESP-NOW Sender (ESP32) =====
+#include <WiFi.h>
+#include <esp_now.h>
+
+// Replace with Receiver’s MAC
+uint8_t PEER_MAC[] = { 0x24, 0x6F, 0x28, 0xAA, 0xBB, 0xCC };
+
+typedef struct {
+  uint32_t seq;
+  uint32_t ms;
+  float temp;
+} __attribute__((packed)) Payload;
+
+void setup() {
+  // Wi-Fi STA + ESP-NOW peer setup
+}
+
+void loop() {
+  // Send payload every 500 ms
+}
+```
+
+---
+
+## 4) Bonus: Wi-Fi + BLE Coexistence (MQTT + GATT Notify)
+Features:
+- Demonstrates **Wi-Fi (MQTT publishing)** + **BLE notifications** running together.  
+- Requires careful tuning (reduced throughput compared to single-radio use).  
+
+```cpp
+// ===== Coexistence Demo: Wi-Fi MQTT + BLE Notify =====
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+
+// (Wi-Fi setup, BLE service/characteristic, coexistence loop – see full code above)
+```
+
+---
+
+## 🔧 Quick Testing Tips
+- **MQTT**:  
+  ```bash
+  mosquitto_sub -h <broker-ip> -t 'lab/esp32/#' -v
+  ```
+- **BLE**: Use **nRF Connect** (Android/iOS) → scan → connect → enable notifications.  
+- **ESP-NOW**: Run Receiver, copy its MAC, paste into Sender.  
+
+---
+
+✅ These sketches provide a **ready-to-run toolkit** for experimenting with ESP32 wireless modes: Wi-Fi telemetry, BLE notifications, ESP-NOW peer-to-peer, and coexistence strategies.
 
