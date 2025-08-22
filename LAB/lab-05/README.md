@@ -44,55 +44,142 @@ Two common approaches to multitasking are:
 
 ## 4. Task Description
 
-### 4.1 pthread Scheduling Example 
+### 4.1 pthread Scheduling Example on ESP32
 
-#### Code
+This section demonstrates how to use **POSIX threads (pthreads)** on ESP32 for multitasking.  
+You will see examples of blinking LEDs, printing messages, and sharing variables between threads.
+
+---
+
+## Example 1 — Blinking LEDs with Threads
 ```cpp
 #include <pthread.h>
 
 #define LED1 2
 #define LED2 12
- 
+
 void *ThreadFunc1(void *threadid) {
-   //Serial.println((int)threadid);
-   while(1)
-   {
-    digitalWrite(LED1, HIGH); delay(1000);
-    digitalWrite(LED1, LOW); delay(1000);
+   while (1) {
+      digitalWrite(LED1, HIGH); delay(1000);
+      digitalWrite(LED1, LOW);  delay(1000);
    }
+   return NULL;
 }
 
 void *ThreadFunc2(void *threadid) {
-   //Serial.println((int)threadid);
-   while(1)
-   {
-    digitalWrite(LED2, HIGH); delay(1000);
-    digitalWrite(LED2, LOW); delay(1000);
+   while (1) {
+      digitalWrite(LED2, HIGH); delay(500);
+      digitalWrite(LED2, LOW);  delay(500);
    }
+   return NULL;
 }
- 
+
 void setup() {
- 
-   Serial.begin(115200);
-   pinMode(LED1,OUTPUT);
-   pinMode(LED2,OUTPUT);
- 
+   pinMode(LED1, OUTPUT);
+   pinMode(LED2, OUTPUT);
+
    pthread_t thLED1, thLED2;
-   int returnValue;
-   
    pthread_create(&thLED1, NULL, ThreadFunc1, NULL);
    pthread_create(&thLED2, NULL, ThreadFunc2, NULL);
-
- 
 }
- 
+
 void loop() {}
 ```
 
-#### Notes
-- `pthread_create()` starts a new thread.
-- `usleep()` simulates periodic execution.
-- On ESP32, pthread is available when using ESP-IDF or Arduino with `CONFIG_PTHREAD_TASK_PRIO_DEFAULT`.
+This code creates two threads:  
+- One toggles LED1 every 1 second.  
+- Another toggles LED2 every 0.5 seconds.  
+
+---
+
+## Example 2 — Serial Printing from Threads
+```cpp
+#include <pthread.h>
+
+void *ThreadFunc1(void *threadid) {
+   while (1) {
+      Serial.println("Thread 1: Running...");
+      delay(1000);
+   }
+   return NULL;
+}
+
+void *ThreadFunc2(void *threadid) {
+   while (1) {
+      Serial.println("Thread 2: Running...");
+      delay(1500);
+   }
+   return NULL;
+}
+
+void setup() {
+   Serial.begin(115200);
+   delay(1000);
+
+   pthread_t th1, th2;
+   pthread_create(&th1, NULL, ThreadFunc1, NULL);
+   pthread_create(&th2, NULL, ThreadFunc2, NULL);
+}
+
+void loop() {}
+```
+
+This demonstrates two threads running concurrently, printing different messages at different intervals.
+
+---
+
+## Example 3 — Sharing Variables Between Threads
+```cpp
+#include <pthread.h>
+
+pthread_mutex_t lock;
+volatile int counter = 0;
+
+void *IncrementThread(void *threadid) {
+   while (1) {
+      pthread_mutex_lock(&lock);
+      counter++;
+      Serial.printf("Increment Thread: counter = %d\n", counter);
+      pthread_mutex_unlock(&lock);
+      delay(1000);
+   }
+   return NULL;
+}
+
+void *DecrementThread(void *threadid) {
+   while (1) {
+      pthread_mutex_lock(&lock);
+      counter--;
+      Serial.printf("Decrement Thread: counter = %d\n", counter);
+      pthread_mutex_unlock(&lock);
+      delay(1500);
+   }
+   return NULL;
+}
+
+void setup() {
+   Serial.begin(115200);
+   delay(1000);
+
+   pthread_mutex_init(&lock, NULL);
+
+   pthread_t thInc, thDec;
+   pthread_create(&thInc, NULL, IncrementThread, NULL);
+   pthread_create(&thDec, NULL, DecrementThread, NULL);
+}
+
+void loop() {}
+```
+
+This example shows how to **share variables safely between threads** using a `mutex`.
+
+---
+
+## Notes
+- `pthread_create()` starts a new thread.  
+- Use `delay()` or `usleep()` to simulate periodic execution.  
+- Use `pthread_mutex_lock()` and `pthread_mutex_unlock()` when **sharing variables** between threads.  
+- On ESP32, pthread is available when using **ESP-IDF** or **Arduino** with `CONFIG_PTHREAD_TASK_PRIO_DEFAULT`.  
 
 ---
 
