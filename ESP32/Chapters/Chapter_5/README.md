@@ -292,3 +292,162 @@ void loop() {
 - **Device Configuration Portals** (Wi-Fi provisioning, settings).  
 
 ---
+---
+# Arduino Code Web Engineering on ESP32
+
+Web engineering on **ESP32** refers to the design, implementation, and optimization of **web-based interfaces and services** running directly on the microcontroller. Unlike traditional servers with abundant resources, the ESP32 operates with **constrained flash memory and RAM**, requiring tailored approaches. This allows ESP32 to act as an IoT node, hosting **dashboards, REST APIs, or WebSocket services**.
+
+---
+
+## 1. ESP32 as a Web Server
+
+### Synchronous Web Server (`WebServer.h`)
+- Simplest to implement, supports GET/POST requests.  
+- ✅ Ideal for small dashboards.
+
+### Asynchronous Web Server (`ESPAsyncWebServer.h`)
+- Non-blocking, handles multiple clients efficiently.  
+- ✅ Recommended for real-time IoT systems.
+
+### WebSocket Server
+- Provides persistent full-duplex communication.  
+- ✅ Reduces overhead compared to repeated HTTP polling.  
+
+---
+
+## 2. Web Content Management
+
+### In-Code HTML
+- Store HTML, CSS, JS in Arduino sketches (`const char*`).  
+- Suitable for very small apps.  
+
+### SPIFFS / LittleFS
+- Store static web content in ESP32 flash filesystem.  
+- ✅ Enables structured multi-file apps.  
+
+### SD Card Hosting
+- Expand storage for large dashboards and multimedia.  
+
+---
+
+## 3. AJAX and Fetch API Integration
+ESP32 supports **AJAX** and **Fetch API** for updating pages without reload.  
+
+- `/api/telemetry` → returns JSON sensor data.  
+- `/api/control` → accepts POST requests for GPIO actuation.  
+
+✅ Provides smooth, real-time interfaces.  
+
+---
+
+## 4. RESTful API Design
+ESP32 can expose REST endpoints compatible with Node-RED, Python, or mobile apps.  
+
+- **GET** → retrieve sensor data  
+- **POST** → send commands  
+- **PUT** → update configurations  
+- **DELETE** → reset/remove resources  
+
+✅ REST enables standardized IoT communication & cloud integration.  
+
+---
+
+## 5. Security in ESP32 Web Applications
+Security is critical for IoT deployments:  
+- WPA2/WPA3 Wi-Fi authentication.  
+- HTTPS via `WiFiClientSecure`.  
+- Basic or token-based API authentication.  
+- Encrypted credential storage.  
+
+⚠️ Balance **security vs performance** on limited hardware.  
+
+---
+
+## 6. Real-Time Web Communication
+- **WebSockets** → push telemetry instantly.  
+- **SSE (Server-Sent Events)** → lightweight, unidirectional.  
+- **MQTT over WebSocket** → enables browser-based pub/sub clients.  
+
+---
+
+## 7. Integration with Node-RED and MQTT
+ESP32 complements larger IoT workflows:  
+- **Local dashboards** served by ESP32.  
+- **Cloud integration** via REST + Node-RED.  
+- **MQTT bridge** → ESP32 acts as pub/sub client with a web UI.  
+
+---
+
+## 8. Power & Performance Considerations
+- Limit concurrent clients (Async servers help).  
+- Optimize content (minify HTML/JS, compress JSON).  
+- Use caching & lightweight libraries.  
+- Consider deep sleep + wake-on-request strategies.  
+
+---
+
+## 9. Example: ESP32 AJAX Dashboard
+
+```cpp
+#include <WiFi.h>
+#include <WebServer.h>
+
+const char* ssid = "YOUR_SSID";
+const char* password = "YOUR_PASS";
+
+WebServer server(80);
+
+String telemetryJson() {
+  float temp = 25.4;
+  bool ledOn = digitalRead(2);
+  char buf[100];
+  snprintf(buf, sizeof(buf), "{\"temp\":%.2f,\"led\":\"%s\"}",
+           temp, ledOn ? "on" : "off");
+  return String(buf);
+}
+
+void handleRoot() {
+  server.send(200, "text/html",
+              "<h2>ESP32 Web Dashboard</h2><p>Use /api/telemetry</p>");
+}
+
+void apiTelemetry() {
+  server.send(200, "application/json", telemetryJson());
+}
+
+void apiLed() {
+  if (server.hasArg("state")) {
+    if (server.arg("state") == "on") digitalWrite(2, HIGH);
+    else digitalWrite(2, LOW);
+  }
+  server.send(200, "application/json", telemetryJson());
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(2, OUTPUT);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) { delay(300); Serial.print("."); }
+  Serial.println(WiFi.localIP());
+
+  server.on("/", HTTP_GET, handleRoot);
+  server.on("/api/telemetry", HTTP_GET, apiTelemetry);
+  server.on("/api/led", HTTP_ANY, apiLed);
+  server.begin();
+}
+
+void loop() {
+  server.handleClient();
+}
+```
+
+---
+
+## 10. Applications
+- **Smart Home Dashboards** (lights, HVAC).  
+- **Industrial Monitoring** (sensors, actuators).  
+- **Educational IoT Projects** (real-time dashboards).  
+- **Device Configuration Portals** (Wi-Fi provisioning, settings).  
+
+---
+
