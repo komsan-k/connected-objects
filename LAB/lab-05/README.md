@@ -44,41 +44,49 @@ Two common approaches to multitasking are:
 
 ## 4. Task Description
 
-### 4.1 pthread Scheduling Example (Linux or ESP-IDF environment)
+### 4.1 pthread Scheduling Example 
 
 #### Code
 ```cpp
-#include <stdio.h>
 #include <pthread.h>
-#include <unistd.h>
 
-void* taskA(void* arg) {
-    while (1) {
-        printf("Task A running...\n");
-        usleep(500000); // 0.5 sec
-    }
-    return NULL;
+#define LED1 2
+#define LED2 12
+ 
+void *ThreadFunc1(void *threadid) {
+   //Serial.println((int)threadid);
+   while(1)
+   {
+    digitalWrite(LED1, HIGH); delay(1000);
+    digitalWrite(LED1, LOW); delay(1000);
+   }
 }
 
-void* taskB(void* arg) {
-    while (1) {
-        printf("Task B running...\n");
-        usleep(1000000); // 1 sec
-    }
-    return NULL;
+void *ThreadFunc2(void *threadid) {
+   //Serial.println((int)threadid);
+   while(1)
+   {
+    digitalWrite(LED2, HIGH); delay(1000);
+    digitalWrite(LED2, LOW); delay(1000);
+   }
 }
+ 
+void setup() {
+ 
+   Serial.begin(115200);
+   pinMode(LED1,OUTPUT);
+   pinMode(LED2,OUTPUT);
+ 
+   pthread_t thLED1, thLED2;
+   int returnValue;
+   
+   pthread_create(&thLED1, NULL, ThreadFunc1, NULL);
+   pthread_create(&thLED2, NULL, ThreadFunc2, NULL);
 
-int main() {
-    pthread_t t1, t2;
-
-    pthread_create(&t1, NULL, taskA, NULL);
-    pthread_create(&t2, NULL, taskB, NULL);
-
-    pthread_join(t1, NULL);
-    pthread_join(t2, NULL);
-
-    return 0;
+ 
 }
+ 
+void loop() {}
 ```
 
 #### Notes
