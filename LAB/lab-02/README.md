@@ -69,8 +69,58 @@ void loop() {
 ```
 
 ---
+# Task 2 — LED Output Driver with pthreads
 
-### Task 2 — Button Input Driver
+This task demonstrates how to use **POSIX threads (pthreads)** to create a simple **multi-threaded LED driver**.  
+Each thread independently toggles an LED, running concurrently.
+
+---
+
+## Code Example
+
+```cpp
+#include <pthread.h>
+#include <Arduino.h>   // required for pinMode, digitalWrite, delay
+
+#define LED1 2
+#define LED2 12
+
+// Thread function for LED1
+void *ThreadFunc1(void *threadid) {
+   while (1) {
+      
+      /**** LED1 toggles ****/
+
+   return NULL;
+}
+
+// Thread function for LED2
+void *ThreadFunc2(void *threadid) {
+   while (1) {
+
+      /**** LED2 toggles ****/
+
+   }
+   return NULL;
+}
+
+void setup() {
+
+   // Create pthreads for each LED task
+   pthread_t thLED1, thLED2;
+   pthread_create(&thLED1, NULL, ThreadFunc1, NULL);
+   pthread_create(&thLED2, NULL, ThreadFunc2, NULL);
+}
+
+void loop() {
+   // Empty: work is handled in threads
+}
+```
+
+---
+
+
+### Task 3 — Button Input Driver
 Create a reusable button driver:
 ```cpp
 int button_read(int pin) {
@@ -93,7 +143,7 @@ void loop() {
 
 ---
 
-### Task 3 — Modular Driver Structure
+### Task 4 — Modular Driver Structure
 Separate drivers into `.h` and `.c` files:
 - `led_driver.h` / `led_driver.c`
 - `button_driver.h` / `button_driver.c`
