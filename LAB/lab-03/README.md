@@ -100,7 +100,6 @@ float lm73ReadC() {
 ```cpp
 #include <Wire.h>
 #include <Adafruit_MPU6050.h>
-#include <Adafruit_Sensor.h>
 
 // Create an instance of the MPU6050 sensor
 Adafruit_MPU6050 mpu;
