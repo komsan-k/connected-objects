@@ -123,7 +123,7 @@ void loop() {
 
 ---
 ### Task 4: Integrating WDT (Watchdog Timer) with LM73 temperature sensor polling
-We configure the WDT to reset the MCU if the loop hangs for more than 3 seconds.
+We configure the WDT to reset the MCU if the loop hangs for more than 10 seconds.
 
 ```cpp
 #include <Wire.h>
