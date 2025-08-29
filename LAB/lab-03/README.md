@@ -91,7 +91,7 @@ float lm73ReadC() {
   Wire.requestFrom(LM73_ADDR, (uint8_t)2);
   if (Wire.available() < 2) return NAN;
   uint16_t raw = (Wire.read() << 8) | Wire.read();
-  int16_t val = raw >> 5;
+  int16_t val = raw >> 2;
   return val * LM73_LSB_C;
 }
 ```
