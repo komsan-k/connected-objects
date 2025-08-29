@@ -19,11 +19,11 @@ Sensor interfacing is a fundamental skill in embedded programming, requiring kno
   - **LM73**: High-accuracy temperature sensor using I²C, with configurable resolution.  
   - **MPU6050**: Combines a 3-axis accelerometer and 3-axis gyroscope; communicates over I²C.
 
-**LDR Measurement Principle:**
-\[
-V_{out} = V_{cc} \cdot \frac{R_{LDR}}{R_{fixed} + R_{LDR}}
-\]
-where \( R_{LDR} \) changes with light intensity.
+LDR Measurement Principle:  
+\( V_{out} = V_{cc} \cdot \frac{R_{LDR}}{R_{fixed} + R_{LDR}} \)  
+where \( R_{LDR} \) is the resistance of the LDR.
+
+
 
 **I²C Communication Basics:**
 - Master-slave protocol over SDA (data) and SCL (clock) lines.
