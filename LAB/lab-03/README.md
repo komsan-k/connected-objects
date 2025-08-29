@@ -47,10 +47,10 @@ where `R_LDR` is the resistance of the light-dependent resistor.
 | Sensor      | Signal | ESP32 Pin | Notes                      |
 |-------------|--------|-----------|----------------------------|
 | **LDR**     | ADC    | GPIO 34   | Analog input only           |
-| **LM73**    | SDA    | GPIO 21   | I²C data                    |
-|             | SCL    | GPIO 22   | I²C clock                   |
-| **MPU6050** | SDA    | GPIO 21   | Shared I²C data line        |
-|             | SCL    | GPIO 22   | Shared I²C clock line       |
+| **LM73**    | SDA    | GPIO 4   | I²C data                    |
+|             | SCL    | GPIO 5   | I²C clock                   |
+| **MPU6050** | SDA    | GPIO 4   | Shared I²C data line        |
+|             | SCL    | GPIO 5   | Shared I²C clock line       |
 | GND         | GND    | GND       | Common ground               |
 | VCC         | 3.3V   | 3.3V      | Power supply                |
 
