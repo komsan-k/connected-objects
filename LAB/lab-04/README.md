@@ -122,6 +122,57 @@ void loop() {
 **Test:** Comment out `esp_task_wdt_reset()` and observe the ESP32 auto-reset after 3 seconds.
 
 ---
+### Task 4: Integrating WDT (Watchdog Timer) with LM73 temperature sensor polling
+We configure the WDT to reset the MCU if the loop hangs for more than 3 seconds.
+
+```cpp
+#include <Wire.h>
+#include "esp_task_wdt.h"
+
+#define LM73_ADDR 0x4D // Default I2C address for LM73
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(4, 5); // SDA = 4, SCL = 5 
+
+  // Initialize Watchdog Timer
+  esp_task_wdt_init(10, true);     // 10 seconds timeout, panic=true
+  esp_task_wdt_add(NULL);          // Add loop task to watchdog
+
+  Serial.println("LM73 + WDT Example Started");
+}
+
+float readTemperatureLM73() {
+  Wire.beginTransmission(LM73_ADDR);
+  Wire.write(0x00); // Temperature register
+  Wire.endTransmission(false); // Send repeated start
+  Wire.requestFrom(LM73_ADDR, 2);
+
+  if (Wire.available() == 2) {
+    uint16_t raw = Wire.read() << 8 | Wire.read();
+    float temp = (raw >>= 2) * 0.03125; // LM73 outputs 13-bit temp 
+    return temp;
+  }
+  return NAN; // Not a Number if failed
+}
+
+void loop() {
+  float temp = readTemperatureLM73();
+  if (!isnan(temp)) {
+    Serial.print("LM73 Temperature: ");
+    Serial.print(temp);
+    Serial.println(" °C");
+  } else {
+    Serial.println("Failed to read LM73");
+  }
+
+  // Feed the watchdog
+  esp_task_wdt_reset();
+
+  delay(1000); // Simulate polling delay
+}
+
+---
 
 
 
