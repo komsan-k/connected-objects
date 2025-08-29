@@ -69,7 +69,7 @@ where `R_LDR` is the resistance of the light-dependent resistor.
 
 ### 6.1 LDR Measurement
 ```cpp
-const int LDR_PIN = 34;
+const int LDR_PIN = 36;
 
 void readLDR() {
   int adcValue = analogRead(LDR_PIN);
@@ -81,7 +81,7 @@ void readLDR() {
 ### 6.2 LM73 I²C Read
 ```cpp
 #include <Wire.h>
-uint8_t LM73_ADDR = 0x48;
+uint8_t LM73_ADDR = 0x4D;
 const float LM73_LSB_C = 0.03125f;
 
 float lm73ReadC() {
