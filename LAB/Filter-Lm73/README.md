@@ -308,55 +308,73 @@ float readTemperature() {
 **Code for LM73 with EMA**
 ```cpp
 #include <Wire.h>
-// Define the I2C address of the LM73 sensor
-#define LM73_ADDRESS 0x4D // Default I2C address, check the datasheet if different
 
-// I2C pins for custom I2C setup
+// Define the I2C address of the LM73 sensor
+#define LM73_ADDRESS 0x4D // Default I2C address, check the datasheet
+
+// I2C pins for custom I2C setup (ESP32)
 #define SDA1_PIN 4   // SDA1 connected to GPIO 4
 #define SCL1_PIN 5   // SCL1 connected to GPIO 5
 
+// ---- Exponential Moving Average (EMA) ----
+const float EMA_ALPHA = 0.2f;  // 0<alpha<=1; smaller = smoother, more lag
+bool emaInit = false;
+float emaPrev = 0.0f;
 
+float emaUpdate(float x) {
+  if (!emaInit) {
+    emaInit = true;
+    emaPrev = x;
+    return x;
+  }
+  emaPrev = EMA_ALPHA * x + (1.0f - EMA_ALPHA) * emaPrev;
+  return emaPrev;
+}
+
+// ---- Setup ----
 void setup() {
-// Initialize the serial communication for debugging
-Serial.begin(115200);
-// Initialize I2C communication
-Wire.begin(SDA1_PIN, SCL1_PIN);
-// Wait for sensor stabilization
-delay(100);
+  Serial.begin(115200);
+  Wire.begin(SDA1_PIN, SCL1_PIN);
+  delay(100); // Wait for sensor stabilization
 }
+
+// ---- Loop ----
 void loop() {
-// Read temperature from the LM73 sensor
-float temperature = readTemperature();
-if (temperature != -1) {
-// Print temperature to the serial monitor
-Serial.print("Temperature: ");
-Serial.print(temperature);
-Serial.println(" °C");
-} else {
-Serial.println("Failed to read temperature.");
+  float temperature = readTemperature();
+
+  if (temperature != -1) {
+    float tempEma = emaUpdate(temperature); // Apply EMA filter
+
+    Serial.print("Raw Temperature: ");
+    Serial.print(temperature, 3);
+    Serial.print(" °C   |   Smoothed (EMA): ");
+    Serial.print(tempEma, 3);
+    Serial.println(" °C");
+  } else {
+    Serial.println("Failed to read temperature.");
+  }
+
+  delay(1000); // 1 second between readings
 }
-delay(1000); // Delay before the next reading
-}
-// Function to read temperature from LM73 sensor
+
+// ---- Read LM73 ----
 float readTemperature() {
-Wire.beginTransmission(LM73_ADDRESS); // Begin I2C communication with LM73
-Wire.write(0x00); // Point to the temperature register
-if (Wire.endTransmission() != 0) {return -1; // Error in communication
-}
-Wire.requestFrom(LM73_ADDRESS, 2); // Request 2 bytes from the sensor
-if (Wire.available() == 2) {
-// Read 2 bytes of temperature data
-byte msb = Wire.read();
-byte lsb = Wire.read();
-// Combine the two bytes into a 16-bit value
-int16_t tempRaw = (msb << 8) | lsb;
-// Shift right to remove the least significant bit, which is unused
-tempRaw >>= 2 ;
-// Convert the raw value to temperature in Celsius (0.03125°C per bit)
-float temperatureC = tempRaw * 0.03125;
-return temperatureC;
-}
-return -1; // Return error if no data available
+  Wire.beginTransmission(LM73_ADDRESS);
+  Wire.write(0x00); // Temperature register
+  if (Wire.endTransmission() != 0) {
+    return -1; // I2C error
+  }
+
+  Wire.requestFrom(LM73_ADDRESS, 2);
+  if (Wire.available() == 2) {
+    byte msb = Wire.read();
+    byte lsb = Wire.read();
+    int16_t tempRaw = (msb << 8) | lsb;
+    tempRaw >>= 2; // 14-bit data (drop 2 LSBs)
+    float temperatureC = tempRaw * 0.03125; // 0.03125°C per LSB
+    return temperatureC;
+  }
+  return -1;
 }
 ```
 ---
