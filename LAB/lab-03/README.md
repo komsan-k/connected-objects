@@ -145,7 +145,7 @@ int16_t gx, gy, gz;
 
 void setup() {
   Serial.begin(115200);
-  Wire.begin(4, 5);            // SDA and SCL (ESP32: GPIO4 & GPIO5)
+  Wire.begin(4, 5);   // SDA and SCL (ESP32: GPIO4 & GPIO5)
   
   // Wake up MPU6050
   Wire.beginTransmission(MPU6050_ADDR);
