@@ -31,8 +31,43 @@ where:
 - **Lag:** output lags by about `(N−1)/2` samples  
 
 **LM73 use case:** If sampling at 10 Hz and `N=20`, the filter averages the last 2 seconds of temperature readings, producing a stable display.
+## 1) Simple Moving Average (SMA)
+
+Smooths by averaging the last **N** samples.  
+- Good general-purpose filter.  
+- Adds `N-1` samples of lag.  
+
+```cpp
+// ---- Simple Moving Average (SMA) ----
+const size_t SMA_N = 16;   // window size (power of two helps if you want bit-shifts)
+float smaBuf[SMA_N];
+size_t smaIdx = 0;
+bool smaPrimed = false;
+double smaSum = 0.0;
+
+float smaUpdate(float x) {
+  smaSum -= smaBuf[smaIdx];
+  smaBuf[smaIdx] = x;
+  smaSum += x;
+
+  smaIdx++;
+  if (smaIdx >= SMA_N) { 
+    smaIdx = 0; 
+    smaPrimed = true; 
+  }
+
+  return (float)(smaSum / (smaPrimed ? SMA_N : smaIdx));
+}
+```
+
+**Use:**
+```cpp
+float t = readLM73Celsius();
+float t_sma = smaUpdate(t);
+```
 
 ---
+
 
 ## 3. Exponential Moving Average (EMA)
 
@@ -55,8 +90,38 @@ where `0 < α < 1`.
 - Equivalent to SMA of length `N ≈ 2/α − 1`  
 
 **LM73 use case:** Room temperature changes slowly; EMA smooths noise without needing a buffer. Useful in low-power devices.
+## 2) Exponential Moving Average (EMA)
+
+- Low-latency.  
+- Less memory.  
+- Tunable smoothing with `alpha`.  
+- Rule of thumb: `alpha ≈ 2/(N+1)` to mimic an SMA of length `N`.  
+
+```cpp
+// ---- Exponential Moving Average (EMA) ----
+const float EMA_ALPHA = 0.2f; // 0<alpha<=1; smaller = smoother, more lag
+bool emaInit = false;
+float emaPrev = 0.0f;
+
+float emaUpdate(float x) {
+  if (!emaInit) { 
+    emaInit = true; 
+    emaPrev = x; 
+    return x; 
+  }
+  emaPrev = EMA_ALPHA * x + (1.0f - EMA_ALPHA) * emaPrev;
+  return emaPrev;
+}
+```
+
+**Use:**
+```cpp
+float t = readLM73Celsius();
+float t_ema = emaUpdate(t);
+```
 
 ---
+
 
 ## 4. Median Filter
 
@@ -76,6 +141,49 @@ y[n] = median{ x[n], x[n−1], …, x[n−(N−1)] }
 - Slight lag, higher computation vs EMA  
 
 **LM73 use case:** Rejects occasional I²C glitches (e.g., one false reading of 150 °C).
+---
+## 3) Median-of-5 (Impulse/Spike Rejection)
+
+- Great at removing occasional spikes (e.g., I²C glitch).  
+- Combine with EMA or SMA for best results.  
+
+```cpp
+// ---- Median of 5 ----
+float medBuf[5];
+size_t medCount = 0;
+
+float median5Update(float x) {
+  // Fill until we have 5 samples
+  if (medCount < 5) { 
+    medBuf[medCount++] = x; 
+  }
+  else {
+    // shift left, append
+    for (int i = 0; i < 4; ++i) medBuf[i] = medBuf[i+1];
+    medBuf[4] = x;
+  }
+
+  size_t n = (medCount < 5) ? medCount : 5;
+  // copy + sort small array (insertion sort)
+  float a[5];
+  for (size_t i = 0; i < n; ++i) a[i] = medBuf[i];
+  for (size_t i = 1; i < n; ++i) {
+    float key = a[i]; int j = i - 1;
+    while (j >= 0 && a[j] > key) { 
+      a[j+1] = a[j]; 
+      j--; 
+    }
+    a[j+1] = key;
+  }
+  return a[n/2]; // median
+}
+```
+
+**Use:**
+```cpp
+float t = readLM73Celsius();
+float t_med = median5Update(t);
+```
 
 ---
 
