@@ -90,6 +90,7 @@ where `0 < α < 1`.
 - Equivalent to SMA of length `N ≈ 2/α − 1`  
 
 **LM73 use case:** Room temperature changes slowly; EMA smooths noise without needing a buffer. Useful in low-power devices.
+
 ## 2) Exponential Moving Average (EMA)
 
 - Low-latency.  
@@ -141,6 +142,7 @@ y[n] = median{ x[n], x[n−1], …, x[n−(N−1)] }
 - Slight lag, higher computation vs EMA  
 
 **LM73 use case:** Rejects occasional I²C glitches (e.g., one false reading of 150 °C).
+
 ---
 ## 3) Median-of-5 (Impulse/Spike Rejection)
 
