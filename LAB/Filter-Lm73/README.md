@@ -32,7 +32,7 @@ where:
 
 **LM73 use case:** If sampling at 10 Hz and `N=20`, the filter averages the last 2 seconds of temperature readings, producing a stable display.
 
-** Simple Moving Average (SMA)
+** Simple Moving Average (SMA) **
 
 Smooths by averaging the last **N** samples.  
 - Good general-purpose filter.  
