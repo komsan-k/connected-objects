@@ -32,7 +32,7 @@ where:
 
 **LM73 use case:** If sampling at 10 Hz and `N=20`, the filter averages the last 2 seconds of temperature readings, producing a stable display.
 
-** Simple Moving Average (SMA) **
+**Simple Moving Average (SMA)**
 
 Smooths by averaging the last **N** samples.  
 - Good general-purpose filter.  
@@ -92,7 +92,7 @@ where `0 < α < 1`.
 
 **LM73 use case:** Room temperature changes slowly; EMA smooths noise without needing a buffer. Useful in low-power devices.
 
-# Exponential Moving Average (EMA)
+**Exponential Moving Average (EMA)**
 
 - Low-latency.  
 - Less memory.  
@@ -145,7 +145,7 @@ y[n] = median{ x[n], x[n−1], …, x[n−(N−1)] }
 **LM73 use case:** Rejects occasional I²C glitches (e.g., one false reading of 150 °C).
 
 ---
-# Median-of-5 (Impulse/Spike Rejection)
+**Median-of-5 (Impulse/Spike Rejection)**
 
 - Great at removing occasional spikes (e.g., I²C glitch).  
 - Combine with EMA or SMA for best results.  
