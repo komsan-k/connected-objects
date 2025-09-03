@@ -14,9 +14,10 @@ The **LM73** is a precision digital temperature sensor, but like all real-world 
 
 **Definition:**
 
-```
-y[n] = (1/N) * Σ (from k=0 to N−1) x[n−k]
-```
+\[
+y[n] = \frac{1}{N} \sum_{k=0}^{N-1} x[n-k]
+\]
+
 
 where:
 - `x[n]` = raw input sequence (sensor readings)  
@@ -74,9 +75,10 @@ float t_sma = smaUpdate(t);
 
 **Definition:**
 
-```
-y[n] = α * x[n] + (1−α) * y[n−1]
-```
+\[
+y[n] = \alpha \, x[n] + (1 - \alpha) \, y[n-1]
+\]
+
 
 where `0 < α < 1`.
 
@@ -129,9 +131,10 @@ float t_ema = emaUpdate(t);
 
 **Definition:** For window size `N` (odd):
 
-```
-y[n] = median{ x[n], x[n−1], …, x[n−(N−1)] }
-```
+\[
+y[n] = \operatorname{median}\{\, x[n], \; x[n-1], \; \ldots, \; x[n-(N-1)] \,\}
+\]
+
 
 **Intuition:**  
 - Removes **impulse noise** (spikes) since outliers don’t affect the median.  
