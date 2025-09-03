@@ -97,6 +97,57 @@ float lm73ReadC() {
 ```
 
 ### 6.3 MPU6050 Read
+
+```cpp
+#include <Wire.h>
+#define MPU6050_ADDR 0x68
+
+int16_t ax, ay, az;
+int16_t gx, gy, gz;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(4, 5);            // SDA and SCL (ESP32: GPIO4 & GPIO5)
+  
+  // Wake up MPU6050
+  Wire.beginTransmission(MPU6050_ADDR);
+  Wire.write(0x6B); // Power Management 1 register
+  Wire.write(0);    // Set to 0 to wake up
+  Wire.endTransmission(true);
+}
+
+void loop() {
+  Wire.beginTransmission(MPU6050_ADDR);
+  Wire.write(0x3B); // Start reading from register 0x3B (Accel X High Byte)
+  Wire.endTransmission(false);
+  Wire.requestFrom(MPU6050_ADDR, 14, true); // 14 bytes: accel(6) + temp(2) + gyro(6)
+
+  ax = Wire.read() << 8 | Wire.read();
+  ay = Wire.read() << 8 | Wire.read();
+  az = Wire.read() << 8 | Wire.read();
+  int16_t temp = Wire.read() << 8 | Wire.read();
+  gx = Wire.read() << 8 | Wire.read();
+  gy = Wire.read() << 8 | Wire.read();
+  gz = Wire.read() << 8 | Wire.read();
+
+  Serial.println("MPU6050 Readings:");
+  Serial.print("Accel: ");
+  Serial.print(ax); Serial.print(" ");
+  Serial.print(ay); Serial.print(" ");
+  Serial.println(az);
+
+  Serial.print("Gyro: ");
+  Serial.print(gx); Serial.print(" ");
+  Serial.print(gy); Serial.print(" ");
+  Serial.println(gz);
+
+  Serial.println("--------------------");
+  delay(500);
+}
+```
+---
+MPU6050 with Device Driver Libary 
+---
 ```cpp
 #include <Wire.h>
 #include <Adafruit_MPU6050.h>
