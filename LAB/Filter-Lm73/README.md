@@ -225,4 +225,83 @@ Combining filters often works best:
 - **EMA** = lightweight, tunable, great for MCUs  
 - **Median** = spike-resistant, complements SMA/EMA  
 - **Hybrid** = best balance for LM73 applications  
+---
+**Code for LM73 with SMA**
+```cpp
+#include <Wire.h>
 
+// Define the I2C address of the LM73 sensor
+#define LM73_ADDRESS 0x4D // Default I2C address, check datasheet
+
+// I2C pins for custom I2C setup (ESP32)
+#define SDA1_PIN 4
+#define SCL1_PIN 5
+
+// ---- Simple Moving Average (SMA) ----
+const size_t SMA_N = 10;   // window size (e.g., 10 samples)
+float smaBuf[SMA_N];
+size_t smaIdx = 0;
+bool smaPrimed = false;
+float smaSum = 0.0;
+
+float smaUpdate(float x) {
+  smaSum -= smaBuf[smaIdx];   // remove oldest value
+  smaBuf[smaIdx] = x;         // add new value
+  smaSum += x;                // update sum
+
+  smaIdx++;
+  if (smaIdx >= SMA_N) {
+    smaIdx = 0;
+    smaPrimed = true;
+  }
+
+  return smaSum / (smaPrimed ? SMA_N : smaIdx);
+}
+
+// ---- Setup ----
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(SDA1_PIN, SCL1_PIN);
+  delay(100); // stabilization
+}
+
+// ---- Loop ----
+void loop() {
+  float temperature = readTemperature();
+
+  if (temperature != -1) {
+    float tempAvg = smaUpdate(temperature); // apply SMA filter
+
+    Serial.print("Raw Temperature: ");
+    Serial.print(temperature, 3);
+    Serial.print(" °C   |   Smoothed (SMA): ");
+    Serial.print(tempAvg, 3);
+    Serial.println(" °C");
+  } else {
+    Serial.println("Failed to read temperature.");
+  }
+
+  delay(1000); // 1 second between readings
+}
+
+// ---- Read LM73 ----
+float readTemperature() {
+  Wire.beginTransmission(LM73_ADDRESS);
+  Wire.write(0x00); // Temp register
+  if (Wire.endTransmission() != 0) {
+    return -1; // I2C error
+  }
+
+  Wire.requestFrom(LM73_ADDRESS, 2);
+  if (Wire.available() == 2) {
+    byte msb = Wire.read();
+    byte lsb = Wire.read();
+    int16_t tempRaw = (msb << 8) | lsb;
+    tempRaw >>= 2; // 14-bit data (drop 2 LSBs)
+    float temperatureC = tempRaw * 0.03125; // 0.03125°C per LSB
+    return temperatureC;
+  }
+  return -1;
+}
+
+```
