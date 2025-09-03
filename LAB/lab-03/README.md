@@ -99,49 +99,55 @@ float lm73ReadC() {
 ### 6.3 MPU6050 Read
 ```cpp
 #include <Wire.h>
+#include <Adafruit_MPU6050.h>
 
-#define MPU6050_ADDR 0x68
 
-int16_t ax, ay, az;
-int16_t gx, gy, gz;
+// Create an instance of the MPU6050 sensor
+Adafruit_MPU6050 mpu;
+
+// I2C pins for custom I2C setup
+#define SDA1_PIN 4   // SDA1 connected to GPIO 4
+#define SCL1_PIN 5   // SCL1 connected to GPIO 5
 
 void setup() {
   Serial.begin(115200);
-  Wire.begin(4, 5);            // SDA and SCL (ESP32: GPIO4 & GPIO5)
-  
-  // Wake up MPU6050
-  Wire.beginTransmission(MPU6050_ADDR);
-  Wire.write(0x6B); // Power Management 1 register
-  Wire.write(0);    // Set to 0 to wake up
-  Wire.endTransmission(true);
+
+  // Start I2C on custom pins (SDA1 = GPIO 4, SCL1 = GPIO 5)
+  Wire.begin(SDA1_PIN, SCL1_PIN);
+
+  // Try to initialize the MPU6050 sensor
+  if (!mpu.begin()) {
+    Serial.println("Failed to find MPU6050 chip. Check wiring.");
+    while (1);
+  }
+
+  // Configure sensor settings
+  mpu.setAccelerometerRange(MPU6050_RANGE_2_G);  // Set accelerometer range to +/- 2g
+  mpu.setGyroRange(MPU6050_RANGE_250_DEG);       // Set gyroscope range to +/- 250 deg/s
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);    // Set filter bandwidth to 21 Hz
+
+  Serial.println("MPU6050 Initialized.");
+  delay(1000);
 }
 
 void loop() {
-  Wire.beginTransmission(MPU6050_ADDR);
-  Wire.write(0x3B); // Start reading from register 0x3B (Accel X High Byte)
-  Wire.endTransmission(false);
-  Wire.requestFrom(MPU6050_ADDR, 14, true); // 14 bytes: accel(6) + temp(2) + gyro(6)
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp); // Read accelerometer, gyroscope, and temperature data
 
-  ax = Wire.read() << 8 | Wire.read();
-  ay = Wire.read() << 8 | Wire.read();
-  az = Wire.read() << 8 | Wire.read();
-  int16_t temp = Wire.read() << 8 | Wire.read();
-  gx = Wire.read() << 8 | Wire.read();
-  gy = Wire.read() << 8 | Wire.read();
-  gz = Wire.read() << 8 | Wire.read();
+  // Print accelerometer data
+  Serial.print("Accel X: "); Serial.print(a.acceleration.x); Serial.print(" m/s^2, ");
+  Serial.print("Accel Y: "); Serial.print(a.acceleration.y); Serial.print(" m/s^2, ");
+  Serial.print("Accel Z: "); Serial.print(a.acceleration.z); Serial.println(" m/s^2");
 
-  Serial.println("MPU6050 Readings:");
-  Serial.print("Accel: ");
-  Serial.print(ax); Serial.print(" ");
-  Serial.print(ay); Serial.print(" ");
-  Serial.println(az);
+  // Print gyroscope data
+  Serial.print("Gyro X: "); Serial.print(g.gyro.x); Serial.print(" deg/s, ");
+  Serial.print("Gyro Y: "); Serial.print(g.gyro.y); Serial.print(" deg/s, ");
+  Serial.print("Gyro Z: "); Serial.print(g.gyro.z); Serial.println(" deg/s");
 
-  Serial.print("Gyro: ");
-  Serial.print(gx); Serial.print(" ");
-  Serial.print(gy); Serial.print(" ");
-  Serial.println(gz);
+  // Print temperature data
+  Serial.print("Temperature: "); Serial.print(temp.temperature); Serial.println(" °C");
 
-  Serial.println("--------------------");
+  // Wait 500 ms before next reading
   delay(500);
 }
 
