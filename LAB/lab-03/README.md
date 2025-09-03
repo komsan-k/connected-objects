@@ -176,8 +176,6 @@ void loop() {
 1. Calibrate the MPU6050 to remove offset errors.
 2. Convert LDR voltage to lux using a calibration curve.
 3. Implement an averaging filter for LM73 readings.
-4. Display all sensor readings on an OLED display.
-5. Send sensor data to a PC via MQTT.
 
 ---
 
