@@ -4,7 +4,7 @@ This section walks through an MPU6050 I²C example, line by line, and adds clear
 
 ---
 
-## Explained & Commented Code (Raw Readout)
+## 1. Explained Code 
 
 ```cpp
 #include <Wire.h>              // I2C library
@@ -60,7 +60,7 @@ void loop() {
 
 ---
 
-## Key Concepts
+## 2. Key Concepts
 
 - **I²C control:**  
   `Wire.begin(4,5)` selects ESP32 GPIO4/5 as SDA/SCL.  
@@ -76,7 +76,7 @@ void loop() {
 
 ---
 
-## Raw → Physical Units
+## 3. Raw → Physical Units
 
 For default full-scale ranges:
 
@@ -99,7 +99,7 @@ $$
 
 ---
 
-## Human-Readable Printout (with Conversions)
+## 4. Human-Readable Printout with Conversions
 
 ```cpp
 #include <Wire.h>
@@ -155,7 +155,7 @@ void loop() {
 
 ---
 
-## Mapping to Cartesian Orientation
+## 5. Mapping to Roll-Pitch-Yaw (RPY)  to a Cartesian orientation
 
 With acceleration vector **a** = (ax, ay, az) in g:
 
@@ -177,7 +177,7 @@ Usually reported in degrees.
 
 ---
 
-## Complementary Filter (Stable Pitch/Roll)
+## 6. Complementary Filter (Stable Pitch/Roll)
 
 - Gyroscope integration → responsive, but drifts.  
 - Accelerometer tilt → absolute, but noisy.  
@@ -196,7 +196,7 @@ Yaw has no gravity reference and will drift without a magnetometer.
 
 ---
 
-## Practical Notes
+## 7. Practical Notes
 
 - **Filter weight α:**  
   Start at 0.98. Larger α = faster response, more drift. Smaller α = more stable, but noisy.  
