@@ -41,7 +41,7 @@ const char* WIFI_PASSWORD  = "YOUR_PASS";
 const char* SERVER_HOST    = "192.168.1.100";  // or hostname
 const uint16_t SERVER_PORT = 5000;
 
-const uint8_t  LDR_PIN     = 34;      // ADC1 channel (GPIO32–39 only)
+const uint8_t  LDR_PIN     = 36;      // ADC1 channel (GPIO32–39 only)
 const float    VCC_MV      = 3300.0;  // ESP32 Vcc in mV (adjust if measured)
 const float    R_FIXED_OHM = 10000.0; // fixed resistor value in ohms
 
