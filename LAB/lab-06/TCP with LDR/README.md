@@ -7,8 +7,8 @@ The code reads an LDR voltage divider, computes **resistance and lux**, and send
 
 ## 🔌 Wiring
 
-- Use **ADC1 pins only** (`GPIO 32–39`) to avoid Wi-Fi conflicts.  
-- Example: `GPIO34` (input-only).  
+- Use **ADC pins only** (`GPIO 32–39`) to avoid Wi-Fi conflicts.  
+- In LAB, KB: `GPIO36`.  
 - Build a divider:
 
 ```
