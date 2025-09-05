@@ -1,4 +1,4 @@
-# MPU6050 I²C Readout: Explanation and Commented Code
+# MPU6050 Tutorial
 
 This section walks through an MPU6050 I²C example, line by line, and adds clear comments for teaching or documentation. It also shows how to convert raw readings to physical units and how to estimate orientation using a complementary filter.
 
