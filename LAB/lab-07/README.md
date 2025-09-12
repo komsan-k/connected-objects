@@ -235,6 +235,7 @@ float readTemperatureLM73() {
 }
 ```
 ---
+### 5.3 Fixing HTTP Web Server with AJAX
 ```cpp
 #include <WiFi.h>
 #include <Wire.h>
