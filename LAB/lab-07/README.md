@@ -47,7 +47,7 @@ Using AJAX (the **Fetch API**) lets the browser request new data in the backgrou
 #include <WiFi.h>
 
 // Replace with your network credentials
-const char* ssid = "iot-lab";
+const char* ssid = "coc-iot-lab";
 const char* password = "computing";
 
 // Set the server to listen on port 80
@@ -77,32 +77,31 @@ void loop() {
   WiFiClient client = server.available();
   if (client) {
     Serial.println("New Client Connected");
-    // Wait until the client sends some data
-    while (client.connected()) {
-      if (client.available()) {
-        // Read the client request
-        String request = client.readStringUntil('\r');
-        Serial.println(request);
-        client.flush();
 
-        // Respond to the client
-          client.println("HTTP/1.1 200 OK");
-          client.println("Content-type:text/html");
-          client.println();
-          client.println("<html><body>");
-          client.println("<h1>Hello from ESP32 HTTP Server</h1>");
-          client.println("</body></html>");
-     /*   
-      *    
-      */
-        break;
-      }
-    }
+    String request = client.readStringUntil('\r');
+    Serial.println(request);
+    client.flush();
+
+    // Respond with HTML page
+    client.println("HTTP/1.1 200 OK");
+    client.println("Content-Type: text/html");
+    client.println("Connection: close");
+    client.println();
+    client.println("<!DOCTYPE html>");
+    client.println("<html>");
+    client.println("<head><title>ESP32 Web Server</title></head>");
+    client.println("<body style='font-family: Arial; text-align: center;'>");
+    client.println("<h1>Hello World from ESP32</h1>");
+    client.println("<p>This is a simple ESP32 web server example.</p>");
+    client.println("</body>");
+    client.println("</html>");
+
     // Close the connection
     client.stop();
     Serial.println("Client Disconnected");
   }
 }
+
 ```
 ---
 ### 5.2 HTTP Web Server with AJAX
