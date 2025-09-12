@@ -133,9 +133,8 @@ void setup() {
   digitalWrite(ledPin, LOW);  // Initially turn off the LED
 
   // Start the I2C communication for LM73 sensor
-//  Wire.begin(); 
   Wire.begin(SDA1_PIN, SCL1_PIN);
-// Wait for sensor stabilization
+  // Wait for sensor stabilization
    delay(100);
 
   // Connect to Wi-Fi network
