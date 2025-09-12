@@ -104,7 +104,139 @@ void loop() {
   }
 }
 ```
+---
+### 5.1 HTTP Web Server with AJAX
+```cpp
+#include <WiFi.h>
+#include <Wire.h>
 
+// Replace these with your network credentials
+const char* ssid = "iot-lab";
+const char* password = "computing";
+
+// Set the LM73 I2C address
+#define LM73_ADDRESS 0x4D // Default LM73 address
+
+#define SDA1_PIN 4   // SDA1 connected to GPIO 4
+#define SCL1_PIN 5   // SCL1 connected to GPIO 5
+
+WiFiServer server(80);  // Create a web server on port 80
+
+int ledPin = 2;  // GPIO pin to control the LED
+
+void setup() {
+  // Start serial communication for debugging
+  Serial.begin(115200);
+
+  // Set up the LED pin
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);  // Initially turn off the LED
+
+  // Start the I2C communication for LM73 sensor
+//  Wire.begin(); 
+  Wire.begin(SDA1_PIN, SCL1_PIN);
+// Wait for sensor stabilization
+   delay(100);
+
+  // Connect to Wi-Fi network
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting to Wi-Fi...");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+  Serial.println("\nConnected to Wi-Fi");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  // Start the web server
+  server.begin();
+}
+
+void loop() {
+  // Check if a client has connected
+  WiFiClient client = server.available();
+  if (client) {
+    Serial.println("New Client Connected");
+    String currentLine = "";
+
+    // Handle client requests
+    while (client.connected()) {
+      if (client.available()) {
+        char c = client.read();
+        currentLine += c;
+
+        // Check if the request ends with a newline
+        if (c == '\n') {
+          // Control the LED based on the URL
+          if (currentLine.indexOf("GET /LED=ON") >= 0) {
+            digitalWrite(ledPin, HIGH);  // Turn on the LED
+            Serial.println("LED ON");
+          }
+          if (currentLine.indexOf("GET /LED=OFF") >= 0) {
+            digitalWrite(ledPin, LOW);   // Turn off the LED
+            Serial.println("LED OFF");
+          }
+
+          // Serve the HTML page
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: text/html");
+          client.println();
+          client.println("<!DOCTYPE HTML>");
+          client.println("<html>");
+          client.println("<h1>ESP32 Web Server</h1>");
+          client.println("<p><a href=\"/LED=ON\">Turn LED ON</a></p>");
+          client.println("<p><a href=\"/LED=OFF\">Turn LED OFF</a></p>");
+          client.println("<p>Temperature: <span id='temp'></span> &deg;C</p>");
+          client.println("<script>");
+          client.println("setInterval(function() {");
+          client.println("var xhttp = new XMLHttpRequest();");
+          client.println("xhttp.onreadystatechange = function() {");
+          client.println("if (this.readyState == 4 && this.status == 200) {");
+          client.println("document.getElementById('temp').innerHTML = this.responseText;");
+          client.println("}};");
+          client.println("xhttp.open('GET', '/temp', true);");
+          client.println("xhttp.send();");
+          client.println("}, 1000);");  // Update temperature every second
+          client.println("</script>");
+          client.println("</html>");
+          break;
+        }
+      }
+    }
+
+    // Handle temperature reading request (via AJAX)
+    if (currentLine.indexOf("GET /temp") >= 0) {
+      float temperature = readTemperatureLM73();  // Get temperature from LM73 sensor
+      client.print(temperature);
+    }
+
+    // Close the connection
+    client.stop();
+    Serial.println("Client Disconnected.");
+  }
+}
+
+// Function to read temperature from LM73 sensor
+float readTemperatureLM73() {
+  Wire.beginTransmission(LM73_ADDRESS);
+  Wire.write(0x00);  // Request temperature register
+  Wire.endTransmission();
+  Wire.requestFrom(LM73_ADDRESS, 2);
+
+  if (Wire.available() == 2) {
+    uint8_t msb = Wire.read();  // Most significant byte
+    uint8_t lsb = Wire.read();  // Least significant byte
+
+    int16_t rawTemperature = (msb << 8) | lsb;  // Combine MSB and LSB
+    float temperature =(rawTemperature >>= 2)* 0.03125;
+    Serial.println(temperature);
+    return temperature;
+  }
+  return -999.0;  // Error value if sensor is not available
+}
+```
+---
 <!--
 ### 5.1 LM73 Function
 ```cpp
