@@ -13,8 +13,8 @@ Using AJAX (the **Fetch API**) lets the browser request new data in the backgrou
 
 | Component | ESP32 |
 |---|---|
-| LDR + 10kΩ divider | LDR→3.3V, junction→**GPIO 34**, resistor→GND |
-| LM73 (I²C) | SDA→**GPIO 21**, SCL→**GPIO 22**, VCC→3.3V, GND→GND |
+| LDR + 10kΩ divider | LDR→3.3V, junction→**GPIO 36**, resistor→GND |
+| LM73 (I²C) | SDA→**GPIO 4**, SCL→**GPIO 5**, VCC→3.3V, GND→GND |
 
 ## 4. Software Requirements
 - Arduino IDE (ESP32 core)
