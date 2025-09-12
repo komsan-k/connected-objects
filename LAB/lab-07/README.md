@@ -235,6 +235,185 @@ float readTemperatureLM73() {
 }
 ```
 ---
+```cpp
+#include <WiFi.h>
+#include <Wire.h>
+
+// Wi-Fi
+const char* ssid     = "coc-iot-lab";
+const char* password = "computing";
+
+// LM73 (I2C)
+#define LM73_ADDRESS 0x4D
+#define SDA1_PIN 4
+#define SCL1_PIN 5
+
+// LED
+const int ledPin = 2;
+
+// HTTP
+WiFiServer server(80);
+
+// ---------- HTML page (served once per request) ----------
+const char PAGE[] PROGMEM = R"HTML(
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>ESP32 Web Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family:sans-serif; text-align:center; margin-top:32px; }
+    a { display:inline-block; margin:8px 0; }
+  </style>
+</head>
+<body>
+  <h1>ESP32 Web Server</h1>
+  <p><a href="/LED=ON">Turn LED ON</a></p>
+  <p><a href="/LED=OFF">Turn LED OFF</a></p>
+  <p>Temperature: <span id="temp">--</span> &deg;C</p>
+  <script>
+    setInterval(function() {
+      var x = new XMLHttpRequest();
+      x.onreadystatechange = function() {
+        if (this.readyState === 4 && this.status === 200) {
+          document.getElementById('temp').textContent = this.responseText;
+        }
+      };
+      x.open('GET', '/temp', true);
+      x.send();
+    }, 1000);
+  </script>
+</body>
+</html>
+)HTML";
+
+// ---------- LM73 read ----------
+float readTemperatureLM73() {
+  // Request temperature register (0x00)
+  Wire.beginTransmission(LM73_ADDRESS);
+  Wire.write(0x00);
+  Wire.endTransmission();
+
+  Wire.requestFrom(LM73_ADDRESS, 2);
+  if (Wire.available() == 2) {
+    uint8_t msb = Wire.read();
+    uint8_t lsb = Wire.read();
+
+    // LM73 temperature format: use your original method
+    // raw >> 2 then * 0.03125 °C (0.03125 = 1/32)
+    int16_t raw = (int16_t)((msb << 8) | lsb);
+    raw >>= 2; // keep sign
+    float temperature = raw * 0.03125f;
+
+    // Debug (optional)
+    // Serial.printf("LM73 raw=0x%04X -> %0.2f C\n", (msb<<8)|lsb, temperature);
+    return temperature;
+  }
+  return -999.0f; // error
+}
+
+// ---------- HTTP helpers ----------
+void sendHtmlPage(WiFiClient &client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/html; charset=utf-8");
+  client.println("Cache-Control: no-store");
+  client.println("Connection: close");
+  client.println();
+  client.print(PAGE);
+}
+
+void sendText(WiFiClient &client, const String &txt) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/plain; charset=utf-8");
+  client.println("Cache-Control: no-store");
+  client.println("Connection: close");
+  client.println();
+  client.print(txt);
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  // LED
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+
+  // I2C
+  Wire.begin(SDA1_PIN, SCL1_PIN);
+  delay(100);
+
+  // Wi-Fi
+  Serial.println("Connecting to Wi-Fi...");
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.printf("\nConnected. IP: %s\n", WiFi.localIP().toString().c_str());
+
+  // HTTP
+  server.begin();
+}
+
+void loop() {
+  WiFiClient client = server.available();
+  if (!client) return;
+
+  Serial.println("New client");
+
+  String requestLine;
+  String headers;
+  unsigned long t0 = millis();
+
+  // Read request headers until blank line
+  while (client.connected() && millis() - t0 < 2000) {
+    if (!client.available()) continue;
+    String line = client.readStringUntil('\n');
+    if (line == "\r" || line.length() == 1) { // blank line = end of headers
+      break;
+    }
+    if (requestLine.length() == 0) requestLine = line; // first line
+    headers += line;
+  }
+
+  // Log first line for debug
+  Serial.print("REQ: "); Serial.println(requestLine);
+
+  // Very simple routing based on request line or headers
+  // Handle AJAX temperature endpoint first
+  if (requestLine.indexOf("GET /temp") >= 0) {
+    float t = readTemperatureLM73();
+    sendText(client, String(t, 2));
+    client.stop();
+    Serial.println("Served /temp");
+    return;
+  }
+
+  // LED control
+  if (requestLine.indexOf("GET /LED=ON") >= 0) {
+    digitalWrite(ledPin, HIGH);
+  } else if (requestLine.indexOf("GET /LED=OFF") >= 0) {
+    digitalWrite(ledPin, LOW);
+  }
+
+  // Ignore browser favicon requests to avoid extra page sends
+  if (requestLine.indexOf("GET /favicon.ico") >= 0) {
+    client.println("HTTP/1.1 204 No Content");
+    client.println("Connection: close");
+    client.println();
+    client.stop();
+    Serial.println("No content for favicon");
+    return;
+  }
+
+  // Serve the HTML page once per request
+  sendHtmlPage(client);
+  client.stop();
+  Serial.println("Client disconnected");
+}
+```
+---
 <!--
 ### 5.1 LM73 Function
 ```cpp
