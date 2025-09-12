@@ -105,7 +105,7 @@ void loop() {
 }
 ```
 ---
-### 5.1 HTTP Web Server with AJAX
+### 5.2 HTTP Web Server with AJAX
 ```cpp
 #include <WiFi.h>
 #include <Wire.h>
