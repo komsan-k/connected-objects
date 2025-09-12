@@ -20,6 +20,27 @@ Using AJAX (the **Fetch API**) lets the browser request new data in the backgrou
 - Arduino IDE (ESP32 core)
 - Libraries: `WiFi.h`, `WebServer.h`, `Wire.h`
 
+## ✅ Pre-requisites
+- Basic Arduino IDE programming.  
+- Understanding of HTTP protocol, HTML, CSS, and JavaScript.  
+- Familiarity with ESP32 programming.  
+
+---
+
+## 🌐 Example: Simple HTML Page
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hello World</title>
+</head>
+<body>
+  <h1>Hello World</h1>
+</body>
+</html>
+```
+
+---
 ## 5. Code Implementation
 ### 5.1 Simple HTTP Web Server 
 ```cpp
