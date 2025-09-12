@@ -26,7 +26,7 @@ When a client connects to the ESP32's IP address in a web browser, they can clic
 #include <WiFi.h>
 
 // Replace these with your WiFi credentials
-const char* ssid = "iot-lab";
+const char* ssid = "coc-iot-lab";
 const char* password = "computing";
 
 WiFiServer server(80);  // Create a web server on port 80
