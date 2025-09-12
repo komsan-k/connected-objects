@@ -69,7 +69,7 @@ void loop() {
           client.println("Content-type:text/html");
           client.println();
           client.println("<html><body>");
-          client.println("<h1>Hello World</h1>");
+          client.println("<h1>Hello from ESP32 HTTP Server</h1>");
           client.println("</body></html>");
      /*   
       *    
