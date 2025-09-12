@@ -65,12 +65,6 @@ void loop() {
         client.flush();
 
         // Respond to the client
-//        client.println("HTTP/1.1 200 OK");
-//        client.println("Content-Type: text/plain");
-//        client.println("Connection: close");  // the connection will be closed after the response
-//        client.println();
-//        client.println("Hello World");  // Send the plain text "Hello World"
-
           client.println("HTTP/1.1 200 OK");
           client.println("Content-type:text/html");
           client.println();
