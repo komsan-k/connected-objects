@@ -21,7 +21,76 @@ Using AJAX (the **Fetch API**) lets the browser request new data in the backgrou
 - Libraries: `WiFi.h`, `WebServer.h`, `Wire.h`
 
 ## 5. Code Implementation
+### 5.1 Simple HTTP Web Server 
+```cpp
+#include <WiFi.h>
 
+// Replace with your network credentials
+const char* ssid = "iot-lab";
+const char* password = "computing";
+
+// Set the server to listen on port 80
+WiFiServer server(80);
+
+void setup() {
+  // Start serial communication for debugging
+  Serial.begin(115200);
+
+  // Connect to Wi-Fi
+  Serial.println("Connecting to Wi-Fi...");
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+  Serial.println("\nConnected to Wi-Fi");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());  // Output the ESP32 IP address
+
+  // Start the HTTP server
+  server.begin();
+}
+
+void loop() {
+  // Check if a client has connected
+  WiFiClient client = server.available();
+  if (client) {
+    Serial.println("New Client Connected");
+    // Wait until the client sends some data
+    while (client.connected()) {
+      if (client.available()) {
+        // Read the client request
+        String request = client.readStringUntil('\r');
+        Serial.println(request);
+        client.flush();
+
+        // Respond to the client
+//        client.println("HTTP/1.1 200 OK");
+//        client.println("Content-Type: text/plain");
+//        client.println("Connection: close");  // the connection will be closed after the response
+//        client.println();
+//        client.println("Hello World");  // Send the plain text "Hello World"
+
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-type:text/html");
+          client.println();
+          client.println("<html><body>");
+          client.println("<h1>Hello World</h1>");
+          client.println("</body></html>");
+     /*   
+      *    
+      */
+        break;
+      }
+    }
+    // Close the connection
+    client.stop();
+    Serial.println("Client Disconnected");
+  }
+}
+```
+
+<!--
 ### 5.1 LM73 Function
 ```cpp
 #include <Wire.h>
@@ -192,7 +261,7 @@ void setup() {
 
 void loop(){ server.handleClient(); }
 ```
-
+-->
 ## 6. Testing
 - Visit `http://<ESP32_IP>/` → Numbers update every second without page reload.
 - `http://<ESP32_IP>/api/sensors` → JSON payload.
