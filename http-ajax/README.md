@@ -1,4 +1,6 @@
-# HTTP and AJAX for Designing HTTP Web Servers Using ESP32
+# ESP32 Web Servers: HTTP and AJAX
+
+## Building ESP32 Web Servers Using HTTP and AJAX
 
 ## 10-Chapter Outline with Labworks
 
