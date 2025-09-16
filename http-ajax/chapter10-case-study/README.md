@@ -25,7 +25,8 @@ visualize data in real time with Chart.js.
 
 ### ESP32 Code
 
-``` {#code:envmonitor .c++ language="C++" caption="Environmental Monitoring Project" label="code:envmonitor"}
+```  {#code:envmonitor .c++ language="C++" caption="Environmental Monitoring Project" label="code:envmonitor"}
+``` cpp
 #include <WiFi.h>
 #include <WebServer.h>
 #include "DHT.h"
