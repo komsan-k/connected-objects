@@ -1,161 +1,265 @@
-# Advanced Applications and Future Trends
+# Case Studies and Projects with ESP32 and AJAX
 
 ## Introduction
-Previous chapters established the foundations of HTTP and AJAX dashboards with ESP32. We built progressively complex systems — from static pages to secure dashboards with cloud integration. In this final chapter, we look ahead at advanced applications and future trends shaping IoT and ESP32 deployments.
 
-By the end of this chapter, readers will:
-- Understand hybrid IoT protocol architectures.
-- Explore Edge AI and TinyML integration.
-- Learn how 5G and beyond will impact ESP32 applications.
-- Examine emerging runtime environments like WebAssembly.
-- Identify case studies and future-ready IoT designs.
+In previous chapters, we studied theory and built progressively complex
+examples. This chapter consolidates knowledge into full-scale projects.
+We analyze case studies across different domains, design complete
+dashboards, and benchmark real deployments. These examples bridge the
+gap between academic exercises and production-ready IoT systems.
 
----
+## Case Study 1: Environmental Monitoring Dashboard
 
-## Hybrid IoT Protocols
+### Objective
 
-### HTTP + MQTT
-- HTTP is best for dashboards, MQTT for device-to-device communication.  
-- Hybrid design:
-  - ESP32 serves local AJAX dashboard.
-  - Simultaneously publishes sensor values to MQTT broker.
+Monitor light intensity, temperature, and humidity using AJAX and
+visualize data in real time with Chart.js.
 
-### HTTP + CoAP
-- CoAP (Constrained Application Protocol) is optimized for low-power devices.  
-- A gateway can translate between CoAP devices and ESP32 HTTP dashboards.
+### System Design
 
-### HTTP + WebSockets
-- WebSockets provide bidirectional updates, while HTTP serves initial static resources.
+-   Hardware: ESP32 + LDR + DHT11.
 
----
+-   Software: ESP32 WebServer + Chart.js frontend.
 
-## Edge AI and TinyML Integration
+-   Update frequency: 2 seconds.
 
-### Why TinyML?
-- Enables inference on-device without cloud dependency.
+### ESP32 Code
 
-### Use Cases
-- Gesture recognition with MPU6050.
-- Voice keyword detection.
-- Predictive maintenance in machines.
+``` {#code:envmonitor .c++ language="C++" caption="Environmental Monitoring Project" label="code:envmonitor"}
+#include <WiFi.h>
+#include <WebServer.h>
+#include "DHT.h"
 
-### ESP32 Example
-```cpp
-int classifyGesture(){
-  // Placeholder for TinyML model
-  return random(0,2); // 0=none, 1=gesture
-}
+#define DHTPIN 4
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
 
-void handleAI(){
-  int result=classifyGesture();
-  String json="{\"gesture\":"+String(result)+"}";
+WebServer server(80);
+
+void handleSensors(){
+  int ldr=analogRead(34);
+  float temp=dht.readTemperature();
+  float hum=dht.readHumidity();
+  String json="{\"ldr\":"+String(ldr)+
+              ",\"temp\":"+String(temp,1)+
+              ",\"hum\":"+String(hum,1)+"}";
   server.send(200,"application/json",json);
 }
 ```
-AJAX dashboard visualizes gesture classification results.
 
----
+### Features
 
-## 5G and Beyond for IoT
+-   Multi-sensor integration.
 
-### Key Features of 5G
-- **eMBB** — Enhanced Mobile Broadband.
-- **URLLC** — Ultra Reliable Low Latency Communications.
-- **mMTC** — Massive Machine-Type Communication.
+-   JSON endpoint consumed by AJAX.
 
-### Impact on ESP32
-- ESP32 devices connected via 5G gateways.
-- Real-time dashboards accessible globally.
+-   Visualized with Chart.js.
 
-### Network Slicing
-- Dedicated virtual networks for IoT, ensuring QoS.
+## Case Study 2: Smart Home Dashboard
 
----
+### Objective
 
-## WebAssembly on Microcontrollers
+Control actuators (lights, fan, pump) and monitor status using AJAX POST
+and GET.
 
-### What is WebAssembly (Wasm)?
-- Binary instruction format designed for speed and portability.
+### System Workflow
 
-### Wasm on IoT
-- Future lightweight runtimes may enable Wasm modules on ESP32.
-- Benefits: sandboxing, language-agnostic deployment.
+-   Client sends POST request (toggle command).
 
-### Potential Use Cases
-- Dynamic function updates without reflashing firmware.
-- Running precompiled analytics directly on ESP32 dashboards.
+-   ESP32 executes action.
 
----
+-   Client polls `/status` for confirmation.
 
-## Multi-Device AJAX Dashboards
+### Challenges
 
-### Problem
-- When multiple ESP32s serve data, dashboards must aggregate values.
+-   Multi-actuator synchronization.
 
-### Solutions
-- Central ESP32 aggregator.
-- Node-RED or cloud middleware.
+-   Error handling for lost requests.
 
-### Example
-- ESP32-A and ESP32-B send JSON to ESP32-C, which renders combined dashboard.
+## Case Study 3: Healthcare Monitoring Prototype
 
----
+### Objective
 
-## Future Trends in IoT Dashboards
+Demonstrate AJAX dashboard for wearable sensors (temperature, heart
+rate).
 
-- **Self-Healing IoT Networks**: Devices detect failures and re-route automatically.  
-- **Digital Twins**: Virtual replicas of ESP32 systems running in the cloud.  
-- **Secure-by-Design Firmware**: ESP32 libraries with built-in TLS, secure tokens, and OTA updates.  
+### Design
 
----
+-   ESP32 collects patient data.
 
-## Case Studies
+-   Dashboard displays real-time graphs.
 
-### Smart Agriculture with 5G
-- Soil sensors connected via ESP32 + 5G hotspot.
-- Real-time irrigation dashboard with predictive AI.
+-   Alerts triggered if values exceed thresholds.
 
-### AI-Driven Healthcare
-- Wearable ESP32 monitors ECG signals, runs TinyML anomaly detection, and uploads to cloud.
+### Considerations
 
-### Fleet-Scale Monitoring
-- Hundreds of ESP32 trackers upload GPS to central system.
-- Dashboards aggregate routes.
+-   Low latency required.
 
----
+-   Strong security (password-protected access).
+
+## Case Study 4: Industrial Control Panel
+
+### Objective
+
+Control relays for motors and pumps with real-time feedback.
+
+### Design Features
+
+-   AJAX dashboard with actuator toggles.
+
+-   Error log displayed in table.
+
+-   Safety fallback if connection is lost.
+
+### Failure Recovery
+
+-   Default actuators to OFF if disconnected.
+
+-   Store logs locally until network recovers.
+
+## Benchmarking Project Deployments
+
+### Metrics
+
+-   Latency (ms per request).
+
+-   Bandwidth usage (bytes per second).
+
+-   Maximum concurrent clients before crash.
+
+### Tools
+
+-   Browser DevTools (Network tab).
+
+-   ESP32 serial logs.
+
+-   Apache Benchmark (ab) tool.
+
+## Scalability Challenges
+
+### From One Node to Many
+
+-   One ESP32 → 50 ESP32 nodes.
+
+-   Central aggregator required.
+
+-   Load balancing via cloud/MQTT.
+
+### ESP32 Limitations
+
+-   RAM usage increases with clients.
+
+-   Async server improves scaling.
+
+## Complete Project Example: IoT Agriculture Dashboard
+
+### Objective
+
+Monitor soil moisture and control irrigation pump.
+
+### ESP32 Code Snippet
+
+``` {#code:agri .c++ language="C++" caption="Agriculture AJAX Example" label="code:agri"}
+void handleSoil(){
+  int soil=analogRead(35);
+  server.send(200,"application/json","{\"soil\":"+String(soil)+"}");
+}
+
+void handlePump(){
+  String body=server.arg("plain");
+  if(body=="on") digitalWrite(26,HIGH);
+  else digitalWrite(26,LOW);
+  server.send(200,"application/json","{\"pump\":\""+body+"\"}");
+}
+```
+
+### Discussion
+
+-   Dashboard shows soil moisture chart.
+
+-   Pump toggled manually or automatically.
+
+## Case Study 5: Integrated Secure Smart Home
+
+### Objective
+
+Combine authentication, AJAX dashboards, and actuator control.
+
+### Features
+
+-   Password-protected login.
+
+-   Multi-actuator control panel.
+
+-   Chart.js graphs for temperature and energy use.
 
 ## Labworks
 
-- **Labwork 12.1:** Hybrid HTTP + MQTT — Build system combining local AJAX and MQTT broker.  
-- **Labwork 12.2:** TinyML Gesture Recognition — Deploy TinyML model on ESP32 and visualize output.  
-- **Labwork 12.3:** Multi-ESP32 Aggregation — Aggregate JSON from multiple ESP32s.  
-- **Labwork 12.4:** 5G Simulation — Simulate latency differences between Wi-Fi and 5G.  
-- **Labwork 12.5:** Capstone Project — Design multi-sensor dashboard integrated with cloud.  
-- **Labwork 12.6:** HTTP + MQTT Demo — Toggle actuator via dashboard and confirm via MQTT.  
-- **Labwork 12.7:** AJAX + TinyML Visualization — Show real-time inference graph.  
-- **Labwork 12.8:** Multi-ESP32 Sync — Synchronize values from multiple ESP32s on one dashboard.  
-- **Labwork 12.9:** Latency Benchmark — Compare Wi-Fi AJAX vs 5G remote access.  
-- **Labwork 12.10:** Future IoT Ecosystem Project — Prototype ecosystem combining AJAX, TinyML, MQTT, and cloud integration.  
+### Labwork 10.1: Environmental Dashboard
 
----
+Build a dashboard for LDR + DHT sensor.
+
+### Labwork 10.2: Smart Home Simulation
+
+Control LED, fan, and pump.
+
+### Labwork 10.3: Secure Dashboard
+
+Add password protection.
+
+### Labwork 10.4: Performance Measurement
+
+Benchmark latency and bandwidth.
+
+### Labwork 10.5: Healthcare Dashboard
+
+Monitor temperature and heart rate with alerts.
+
+### Labwork 10.6: Agriculture Dashboard
+
+Integrate soil moisture sensor and pump control.
+
+### Labwork 10.7: Healthcare Prototype
+
+Build patient monitoring system with graphs.
+
+### Labwork 10.8: Industry Control Panel
+
+Toggle relays, view error logs.
+
+### Labwork 10.9: Benchmarking Projects
+
+Run multi-client tests and measure limits.
+
+### Labwork 10.10: Capstone Project --- IoT Ecosystem
+
+Design full IoT system with multiple ESP32s, central aggregator, and
+professional dashboards.
 
 ## Summary
 
 In this chapter, we:
-- Explored hybrid IoT protocol combinations.
-- Integrated TinyML with AJAX dashboards.
-- Analyzed the impact of 5G and beyond on ESP32.
-- Discussed WebAssembly for microcontrollers.
-- Studied multi-device synchronization strategies.
-- Identified future trends such as digital twins and secure firmware.
-- Completed 10 labworks including a future-ready IoT ecosystem prototype.
 
----
+-   Explored case studies in environmental, home, healthcare, and
+    industrial IoT.
+
+-   Designed dashboards integrating sensors, actuators, and security.
+
+-   Benchmarked deployments with latency, bandwidth, and scalability
+    tests.
+
+-   Addressed scalability and failure recovery strategies.
+
+-   Completed 10 labworks culminating in a capstone IoT ecosystem.
 
 ## Review Questions
 
-1. Why combine HTTP with MQTT or CoAP in IoT systems?  
-2. How can TinyML enhance ESP32 dashboards?  
-3. What impact will 5G have on latency and reliability?  
-4. Why is WebAssembly promising for IoT microcontrollers?  
-5. Suggest a visionary future IoT project using ESP32 and AJAX.  
+1.  How do scalability challenges affect ESP32 dashboards?
+
+2.  Why is failure recovery critical in industrial dashboards?
+
+3.  Compare environmental vs healthcare AJAX dashboards.
+
+4.  What tools can benchmark ESP32 web server performance?
+
+5.  Suggest improvements for a secure smart home AJAX dashboard.
