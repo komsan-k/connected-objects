@@ -95,7 +95,8 @@ Control who can read/write. Example:
 
 ### ESP32 Example
 
-``` {#code:firebase .c++ language="C++" caption="Firebase with ESP32" label="code:firebase"}
+<!-- ``` {#code:firebase .c++ language="C++" caption="Firebase with ESP32" label="code:firebase"} -->
+``` cpp
 if(Firebase.RTDB.setInt(&fbdo,"/sensors/ldr",ldr)){
   Serial.println("Uploaded: "+String(ldr));
 }
