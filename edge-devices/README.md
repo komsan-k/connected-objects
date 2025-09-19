@@ -64,50 +64,13 @@ detect accidents instantly, without waiting for the cloud.
 ------------------------------------------------------------------------
 
 ## 🔹 Cloud vs Edge Comparison
-
-  -----------------------------------------------------------------------
-  Feature           Cloud Computing 🌩️        Edge Computing 🌐
-  ----------------- ------------------------- ---------------------------
-  **Where           Centralized (data         Decentralized (near
-  processing        centers)                  devices)
-  happens**                                   
-
-  **Latency**       Higher (depends on        Very low (local)
-                    network)                  
-
-  **Bandwidth       High (send all raw data)  Low (send only useful data)
-  usage**                                     
-
-  **Privacy**       Risk of exposure in       Better, data can stay local
-                    transit/storage           
-
-  **Use cases**     Big data analytics,       Real-time control, IoT,
-                    storage, training ML      AR/VR, autonomous systems
-                    models                    
-  -----------------------------------------------------------------------
-
-------------------------------------------------------------------------
-
 # Cloud vs Edge Computing Comparison
 
-  ------------------------------------------------------------------------
-  Feature          Cloud Computing 🌩️         Edge Computing 🌐
-  ---------------- -------------------------- ----------------------------
-  **Where          Centralized (data centers) Decentralized (near devices)
-  processing                                  
-  happens**                                   
-
-  **Latency**      Higher (depends on         Very low (local)
-                   network)                   
-
-  **Bandwidth      High (send all raw data)   Low (send only useful data)
-  usage**                                     
-
-  **Privacy**      Risk of exposure in        Better, data can stay local
-                   transit/storage            
-
-  **Use cases**    Big data analytics,        Real-time control, IoT,
-                   storage, training ML       AR/VR, autonomous systems
-                   models                     
-  ------------------------------------------------------------------------
+| Feature                  | Cloud Computing 🌩️                       | Edge Computing 🌐                         |
+|--------------------------|-------------------------------------------|-------------------------------------------|
+| **Where processing happens** | Centralized (data centers)                | Decentralized (near devices)              |
+| **Latency**              | Higher (depends on network)               | Very low (local)                          |
+| **Bandwidth usage**      | High (send all raw data)                  | Low (send only useful data)               |
+| **Privacy**              | Risk of exposure in transit/storage       | Better, data can stay local               |
+| **Use cases**            | Big data analytics, storage, training ML models | Real-time control, IoT, AR/VR, autonomous systems |
 
