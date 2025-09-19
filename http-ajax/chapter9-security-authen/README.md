@@ -60,7 +60,9 @@ Simplified token exchange for constrained devices.
 
 ### ESP32 Example
 
-``` {#code:basicauth .c++ language="C++" caption="Basic Authentication Example" label="code:basicauth"}
+<!-- ``` {#code:basicauth .c++ language="C++" caption="Basic Authentication Example" label="code:basicauth"} -->
+
+``` cpp
 const char* username="admin";
 const char* userpass="esp32";
 
@@ -84,7 +86,9 @@ void handleSecure(){
 
 ### ESP32 Code
 
-``` {#code:ajaxsecure .c++ language="C++" caption="Password-Protected Dashboard" label="code:ajaxsecure"}
+<!-- ``` {#code:ajaxsecure .c++ language="C++" caption="Password-Protected Dashboard" label="code:ajaxsecure"} -->
+
+``` cpp
 void handleDashboard(){
   if(!server.authenticate(username,userpass)){
     return server.requestAuthentication();
@@ -112,7 +116,9 @@ void handleDashboard(){
 
 ### ESP32 Example
 
-``` {#code:tokenauth .c++ language="C++" caption="Token Authentication" label="code:tokenauth"}
+<!-- ``` {#code:tokenauth .c++ language="C++" caption="Token Authentication" label="code:tokenauth"} -->
+
+``` cpp
 String token="";
 
 void handleLogin(){
@@ -162,7 +168,9 @@ Prevents eavesdropping and man-in-the-middle attacks.
 
 ### ESP32 HTTPS Example
 
-``` {#code:https .c++ language="C++" caption="WiFiClientSecure Example" label="code:https"}
+<!-- ``` {#code:https .c++ language="C++" caption="WiFiClientSecure Example" label="code:https"} -->
+
+``` cpp
 #include <WiFiClientSecure.h>
 WiFiClientSecure client;
 
