@@ -1,4 +1,4 @@
-# Lab Manuscript: TCP Communication with Python
+# TCP Communication with Python
 
 ## 1. Lab Objectives
 - Understand the basics of socket programming in Python.  
