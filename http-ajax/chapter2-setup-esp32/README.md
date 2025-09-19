@@ -1,85 +1,90 @@
-\chapter{Serving Dynamic Content with ESP32}
+# Serving Dynamic Content with ESP32
 
-\section{Introduction}
+## Introduction
 
-In Chapter~2, we explored serving static content from ESP32, including HTML, CSS, JavaScript, and images. Static content is important for structure and design, but IoT applications demand something more: \textbf{dynamic content}. Dynamic content reflects real-time conditions such as sensor readings, actuator states, or messages from other devices.  
+In Chapter 2, we explored serving static content from ESP32, including
+HTML, CSS, JavaScript, and images. Static content is important for
+structure and design, but IoT applications demand something more:
+**dynamic content**. Dynamic content reflects real-time conditions such
+as sensor readings, actuator states, or messages from other devices.
 
-In this chapter, we expand on techniques to generate and serve dynamic content. We compare different update methods (meta refresh, AJAX, SSE, WebSockets), build dashboards with real-time charts, and provide practical labworks to consolidate knowledge.
+In this chapter, we expand on techniques to generate and serve dynamic
+content. We compare different update methods (meta refresh, AJAX, SSE,
+WebSockets), build dashboards with real-time charts, and provide
+practical labworks to consolidate knowledge.
 
-\section{Static vs Dynamic Content in Depth}
+## Static vs Dynamic Content in Depth
 
-\subsection{Static Content}
-\begin{itemize}
-  \item Predefined and does not change unless manually updated.
-  \item Examples: logo, stylesheet, help page.
-\end{itemize}
+### Static Content
 
-\subsection{Dynamic Content}
-\begin{itemize}
-  \item Generated at runtime, based on conditions or inputs.
-  \item Examples: displaying LDR sensor value, system uptime.
-\end{itemize}
+-   Predefined and does not change unless manually updated.
+-   Examples: logo, stylesheet, help page.
 
-\subsection{Server-Side vs Client-Side Rendering}
-\begin{itemize}
-  \item \textbf{Server-side:} ESP32 inserts sensor values into HTML before sending.
-  \item \textbf{Client-side:} Browser fetches raw data (e.g., JSON) and renders it using JavaScript.
-\end{itemize}
+### Dynamic Content
 
-\section{Update Techniques for Dynamic Content}
+-   Generated at runtime, based on conditions or inputs.
+-   Examples: displaying LDR sensor value, system uptime.
 
-\subsection{Meta Refresh}
-\begin{itemize}
-  \item Page reloads every few seconds.
-  \item Pros: simple to implement.
-  \item Cons: flickers, reload overhead.
-\end{itemize}
+### Server-Side vs Client-Side Rendering
 
-\subsection{AJAX Polling}
-\begin{itemize}
-  \item JavaScript periodically fetches data.
-  \item Pros: efficient, partial updates only.
-  \item Cons: may waste requests if data does not change.
-\end{itemize}
+-   **Server-side:** ESP32 inserts sensor values into HTML before
+    sending.
+-   **Client-side:** Browser fetches raw data (e.g., JSON) and renders
+    it using JavaScript.
 
-\subsection{Long Polling}
-\begin{itemize}
-  \item Request held open until new data is available.
-  \item Pros: fewer wasted requests.
-  \item Cons: each client consumes server resources.
-\end{itemize}
+## Update Techniques for Dynamic Content
 
-\subsection{Server-Sent Events (SSE)}
-\begin{itemize}
-  \item One-way stream of data from server to client.
-  \item Pros: efficient, push-based.
-  \item Cons: unidirectional only.
-\end{itemize}
+### Meta Refresh
 
-\subsection{WebSockets}
-\begin{itemize}
-  \item Full-duplex communication channel.
-  \item Pros: real-time, interactive.
-  \item Cons: higher complexity.
-\end{itemize}
+-   Page reloads every few seconds.
+-   **Pros:** simple to implement.\
+-   **Cons:** flickers, reload overhead.
 
-\subsection{Comparison Table}
-\begin{tabular}{|l|l|l|}
-\hline
-Method & Pros & Cons \\
-\hline
-Meta Refresh & Simple, no JS needed & Page flicker, bandwidth waste \\
-AJAX Polling & Efficient, smooth UI & Repeated requests \\
-Long Polling & Updates only when needed & Resource heavy for many clients \\
-SSE & Push updates, lightweight & Only one-way communication \\
-WebSockets & Real-time, bidirectional & More complex, higher overhead \\
-\hline
-\end{tabular}
+### AJAX Polling
 
-\section{Embedding Sensor Values in HTML}
+-   JavaScript periodically fetches data.
+-   **Pros:** efficient, partial updates only.\
+-   **Cons:** may waste requests if data does not change.
 
-\subsection{Example: LDR with Meta Refresh}
-\begin{lstlisting}[language=C++, caption={Meta Refresh LDR Page}, label=code:ldrmeta]
+### Long Polling
+
+-   Request held open until new data is available.
+-   **Pros:** fewer wasted requests.\
+-   **Cons:** each client consumes server resources.
+
+### Server-Sent Events (SSE)
+
+-   One-way stream of data from server to client.
+-   **Pros:** efficient, push-based.\
+-   **Cons:** unidirectional only.
+
+### WebSockets
+
+-   Full-duplex communication channel.
+-   **Pros:** real-time, interactive.\
+-   **Cons:** higher complexity.
+
+### Comparison Table
+
+  ------------------------------------------------------------------------
+  Method        Pros                       Cons
+  ------------- -------------------------- -------------------------------
+  Meta Refresh  Simple, no JS needed       Page flicker, bandwidth waste
+
+  AJAX Polling  Efficient, smooth UI       Repeated requests
+
+  Long Polling  Updates only when needed   Resource heavy for many clients
+
+  SSE           Push updates, lightweight  Only one-way communication
+
+  WebSockets    Real-time, bidirectional   More complex, higher overhead
+  ------------------------------------------------------------------------
+
+## Embedding Sensor Values in HTML
+
+### Example: LDR with Meta Refresh
+
+``` cpp
 String buildPage() {
   int value = analogRead(34);
   String html = "<!DOCTYPE html><html><head>"
@@ -89,36 +94,36 @@ String buildPage() {
                 "</body></html>";
   return html;
 }
-\end{lstlisting}
+```
 
-\subsection{Line-by-Line Explanation}
-\begin{itemize}
-  \item \texttt{analogRead(34)} — reads the LDR value.
-  \item \texttt{meta refresh} — reloads page every 5 seconds.
-  \item Output is simple HTML with the sensor value embedded.
-\end{itemize}
+### Line-by-Line Explanation
 
-\section{Serving JSON for AJAX}
+-   `analogRead(34)` --- reads the LDR value.
+-   `meta refresh` --- reloads page every 5 seconds.
+-   Output is simple HTML with the sensor value embedded.
 
-\subsection{Basic JSON Endpoint}
-\begin{lstlisting}[language=C++, caption={JSON Endpoint}, label=code:jsonendpoint]
+## Serving JSON for AJAX
+
+### Basic JSON Endpoint
+
+``` cpp
 void handleJSON() {
   int ldr = analogRead(34);
   String json = "{\"ldr\":" + String(ldr) + "}";
   server.send(200,"application/json",json);
 }
-\end{lstlisting}
+```
 
-\subsection{Why JSON?}
-\begin{itemize}
-  \item Lightweight, easy for JavaScript to parse.
-  \item Standard format in IoT communication.
-\end{itemize}
+### Why JSON?
 
-\section{AJAX Dashboard Example}
+-   Lightweight, easy for JavaScript to parse.
+-   Standard format in IoT communication.
 
-\subsection{Complete Code}
-\begin{lstlisting}[language=C++, caption={AJAX Dashboard for LDR}, label=code:ajaxdash]
+## AJAX Dashboard Example
+
+### Complete Code
+
+``` cpp
 void handleDashboard() {
   String html="<!DOCTYPE html><html><body>"
               "<h1>AJAX LDR Dashboard</h1>"
@@ -133,18 +138,17 @@ void handleDashboard() {
               "</script></body></html>";
   server.send(200,"text/html",html);
 }
-\end{lstlisting}
+```
 
-\subsection{Explanation}
-\begin{itemize}
-  \item JavaScript fetches JSON from ESP32 every second.
-  \item DOM is updated with new values.
-  \item Smooth updates without full reload.
-\end{itemize}
+### Explanation
 
-\section{Multi-Sensor JSON Example}
+-   JavaScript fetches JSON from ESP32 every second.
+-   DOM is updated with new values.
+-   Smooth updates without full reload.
 
-\begin{lstlisting}[language=C++, caption={Multi-Sensor JSON}, label=code:multisensor]
+## Multi-Sensor JSON Example
+
+``` cpp
 void handleSensors() {
   int ldr = analogRead(34);
   float temp = 25.5;
@@ -152,98 +156,89 @@ void handleSensors() {
                 ",\"temp\":" + String(temp,1) + "}";
   server.send(200,"application/json",json);
 }
-\end{lstlisting}
+```
 
-\section{Data Visualization: Chart.js}
+## Data Visualization: Chart.js
 
-\subsection{Line Chart Example}
-\begin{lstlisting}[language=C++, caption={Chart.js Example}, label=code:chartjs]
-"<canvas id='c' width='400' height='200'></canvas>"
-"<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>"
-"<script>"
-"let ctx=document.getElementById('c').getContext('2d');"
-"let data={labels:[],datasets:[{label:'LDR',data:[],borderColor:'blue'}]};"
-"let chart=new Chart(ctx,{type:'line',data:data});"
-"async function update(){"
-  "let r=await fetch('/ldr'); let j=await r.json();"
-  "data.labels.push(new Date().toLocaleTimeString());"
-  "data.datasets[0].data.push(j.ldr);"
-  "if(data.labels.length>20){data.labels.shift();data.datasets[0].data.shift();}"
-  "chart.update();}"
-"setInterval(update,1000);"
-"</script>"
-\end{lstlisting}
+### Line Chart Example
 
-\section{Real-Time Gauges and Tables}
+``` html
+<canvas id='c' width='400' height='200'></canvas>
+<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+<script>
+let ctx=document.getElementById('c').getContext('2d');
+let data={labels:[],datasets:[{label:'LDR',data:[],borderColor:'blue'}]};
+let chart=new Chart(ctx,{type:'line',data:data});
+async function update(){
+  let r=await fetch('/ldr'); let j=await r.json();
+  data.labels.push(new Date().toLocaleTimeString());
+  data.datasets[0].data.push(j.ldr);
+  if(data.labels.length>20){data.labels.shift();data.datasets[0].data.shift();}
+  chart.update();
+}
+setInterval(update,1000);
+</script>
+```
 
-\subsection{Gauge Visualization}
-Third-party libraries (e.g., JustGage, SmoothieCharts) allow gauge widgets for sensor values.
+## Real-Time Gauges and Tables
 
-\subsection{Dynamic Tables}
-HTML tables updated with AJAX can display multiple sensor values clearly.
+### Gauge Visualization
 
-\section{Multi-Client Synchronization}
+Third-party libraries (e.g., JustGage, SmoothieCharts) allow gauge
+widgets for sensor values.
 
-\subsection{Challenge}
-When multiple clients connect, each may receive outdated or conflicting data.
+### Dynamic Tables
 
-\subsection{Solutions}
-\begin{itemize}
-  \item Central JSON endpoint for all sensors.
-  \item Timestamp values for synchronization.
-  \item Use SSE or WebSockets for push updates.
-\end{itemize}
+HTML tables updated with AJAX can display multiple sensor values
+clearly.
 
-\section{Labworks}
+## Multi-Client Synchronization
 
-\subsection{Labwork 3.1: Meta Refresh Demo}
-Display LDR value with automatic page reload.
+### Challenge
 
-\subsection{Labwork 3.2: JSON Endpoint}
-Serve sensor value as JSON.
+When multiple clients connect, each may receive outdated or conflicting
+data.
 
-\subsection{Labwork 3.3: AJAX Dashboard}
-Build dashboard with real-time updates.
+### Solutions
 
-\subsection{Labwork 3.4: Multi-Sensor JSON}
-Serve multiple sensor values in one JSON response.
+-   Central JSON endpoint for all sensors.
+-   Timestamp values for synchronization.
+-   Use SSE or WebSockets for push updates.
 
-\subsection{Labwork 3.5: Chart.js Visualization}
-Plot sensor values as a real-time chart.
+## Labworks
 
-\subsection{Labwork 3.6: XML Endpoint}
-Serve sensor data in XML for legacy compatibility.
+-   **Labwork 3.1: Meta Refresh Demo** --- Display LDR value with
+    automatic page reload.\
+-   **Labwork 3.2: JSON Endpoint** --- Serve sensor value as JSON.\
+-   **Labwork 3.3: AJAX Dashboard** --- Build dashboard with real-time
+    updates.\
+-   **Labwork 3.4: Multi-Sensor JSON** --- Serve multiple sensor values
+    in one JSON response.\
+-   **Labwork 3.5: Chart.js Visualization** --- Plot sensor values as a
+    real-time chart.\
+-   **Labwork 3.6: XML Endpoint** --- Serve sensor data in XML for
+    legacy compatibility.\
+-   **Labwork 3.7: Dynamic Tables** --- Use AJAX to fill HTML table with
+    sensor values.\
+-   **Labwork 3.8: Real-Time Gauges** --- Implement gauge visualization
+    for one sensor.\
+-   **Labwork 3.9: JSON + Visualization** --- Combine JSON endpoint with
+    Chart.js and table.\
+-   **Labwork 3.10: Error Recovery** --- Simulate ESP32 disconnection
+    and handle gracefully.
 
-\subsection{Labwork 3.7: Dynamic Tables}
-Use AJAX to fill HTML table with sensor values.
+## Summary
 
-\subsection{Labwork 3.8: Real-Time Gauges}
-Implement gauge visualization for one sensor.
+In this chapter, we: - Differentiated static vs dynamic content. -
+Compared meta refresh, AJAX, long polling, SSE, and WebSockets. - Built
+dashboards with JSON, AJAX, and Chart.js. - Introduced visualization
+using tables and gauges. - Addressed multi-client synchronization
+issues. - Completed 10 labworks covering dynamic web serving.
 
-\subsection{Labwork 3.9: JSON + Visualization}
-Combine JSON endpoint with Chart.js and table.
+## Review Questions
 
-\subsection{Labwork 3.10: Error Recovery}
-Simulate ESP32 disconnection and handle gracefully.
-
-\section{Summary}
-
-In this chapter, we:
-\begin{itemize}
-  \item Differentiated static vs dynamic content.
-  \item Compared meta refresh, AJAX, long polling, SSE, and WebSockets.
-  \item Built dashboards with JSON, AJAX, and Chart.js.
-  \item Introduced visualization using tables and gauges.
-  \item Addressed multi-client synchronization issues.
-  \item Completed 10 labworks covering dynamic web serving.
-\end{itemize}
-
-\section{Review Questions}
-\begin{enumerate}
-  \item Compare server-side vs client-side rendering for ESP32 dashboards.
-  \item Why is JSON preferred for AJAX responses?
-  \item Explain pros and cons of AJAX vs SSE vs WebSockets.
-  \item How can gauges and tables improve IoT dashboards?
-  \item Suggest strategies to handle multi-client synchronization.
-\end{enumerate}
-
+1.  Compare server-side vs client-side rendering for ESP32 dashboards.\
+2.  Why is JSON preferred for AJAX responses?\
+3.  Explain pros and cons of AJAX vs SSE vs WebSockets.\
+4.  How can gauges and tables improve IoT dashboards?\
+5.  Suggest strategies to handle multi-client synchronization.
