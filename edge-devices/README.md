@@ -10,16 +10,16 @@ it (if needed) to cloud or data centers.
 ### ✨ Examples of Edge Devices
 
 -   **Consumer IoT:** Smart speakers (Amazon Echo), smart cameras,
-    wearables (Fitbit, Apple Watch)\
--   **Industrial IoT:** Sensors, PLCs, smart meters, factory robots\
--   **Healthcare:** Remote patient monitors, AI-enabled ECG devices\
+    wearables (Fitbit, Apple Watch)
+-   **Industrial IoT:** Sensors, PLCs, smart meters, factory robots
+-   **Healthcare:** Remote patient monitors, AI-enabled ECG devices
 -   **Vehicles & Mobility:** Drones, autonomous cars, connected traffic
     lights
 
 ### ✅ Role
 
 -   Interface between **physical world (sensors, actuators)** and the
-    **digital world (cloud, networks)**\
+    **digital world (cloud, networks)**
 -   Often equipped with **CPUs, GPUs, or NPUs** for local AI processing
 
 ------------------------------------------------------------------------
@@ -32,19 +32,19 @@ cloud servers.
 
 ### ✨ Key Characteristics
 
--   **Local processing:** Reduces reliance on cloud, saves bandwidth\
+-   **Local processing:** Reduces reliance on cloud, saves bandwidth
 -   **Low latency:** Faster decisions, critical for real-time
-    applications\
+    applications
 -   **Improved privacy:** Sensitive data stays local (e.g., face
-    recognition on device)\
+    recognition on device)
 -   **Scalable:** Offloads computation from centralized systems
 
 ### ✅ Examples of Edge Computing in Action
 
--   Smart cameras detecting motion locally before uploading clips\
+-   Smart cameras detecting motion locally before uploading clips
 -   Autonomous vehicles making real-time navigation decisions without
-    cloud delay\
--   Industrial machines predicting maintenance needs onsite\
+    cloud delay
+-   Industrial machines predicting maintenance needs onsite
 -   Healthcare wearables alerting abnormal heart rhythms in real time
 
 ------------------------------------------------------------------------
@@ -52,12 +52,12 @@ cloud servers.
 ## 🔹 Relationship Between the Two
 
 -   **Edge devices** = the hardware endpoints (sensors, smartphones,
-    gateways, IoT devices).\
+    gateways, IoT devices).
 -   **Edge computing** = the concept/architecture of processing data at
     or near those devices instead of in the cloud.
 
-👉 **Example:**\
-- A traffic camera (**edge device**) captures video.\
+👉 **Example:**
+- A traffic camera (**edge device**) captures video.
 - Running **object detection locally (edge computing)** allows it to
 detect accidents instantly, without waiting for the cloud.
 
