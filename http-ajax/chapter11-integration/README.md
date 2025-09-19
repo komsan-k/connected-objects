@@ -52,7 +52,8 @@ ThingSpeak provides easy cloud dashboards with built-in visualization.
 
 ### Multi-Field Upload
 
-``` {#code:thingspeakmulti .c++ language="C++" caption="Multi-Field ThingSpeak Update" label="code:thingspeakmulti"}
+<!-- ``` {#code:thingspeakmulti .c++ language="C++" caption="Multi-Field ThingSpeak Update" label="code:thingspeakmulti"} -->
+``` cpp
 String url="http://api.thingspeak.com/update?api_key="+apiKey+
            "&field1="+String(temp)+
            "&field2="+String(hum)+
@@ -79,7 +80,9 @@ Data stored in JSON tree.
 
 Control who can read/write. Example:
 
-``` {#code:firebaserules .json language="json" caption="Firebase Rules" label="code:firebaserules"}
+<!-- ``` {#code:firebaserules .json language="json" caption="Firebase Rules" label="code:firebaserules"} -->
+
+``` cpp
 {
   "rules": {
     "sensors": {
@@ -118,7 +121,9 @@ Node-RED allows flow-based programming for IoT.
 
 ### ESP32 POST Example
 
-``` {#code:nodered .c++ language="C++" caption="ESP32 to Node-RED" label="code:nodered"}
+<!-- ``` {#code:nodered .c++ language="C++" caption="ESP32 to Node-RED" label="code:nodered"} -->
+
+``` cpp
 http.begin("http://192.168.1.10:1880/sensors");
 http.addHeader("Content-Type","application/json");
 String json="{\"ldr\":"+String(ldr)+"}";
