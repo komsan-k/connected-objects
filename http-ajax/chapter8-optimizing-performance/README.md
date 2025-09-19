@@ -51,7 +51,9 @@ Useful for repeated requests and monitoring response time.
 
 ### ESP32-Side Logging
 
-``` {#code:millislog .c++ language="C++" caption="ESP32 Latency Logging" label="code:millislog"}
+<!-- ``` {#code:millislog .c++ language="C++" caption="ESP32 Latency Logging" label="code:millislog"} -->
+
+``` cpp
 void handleLDR(){
   unsigned long start=millis();
   int value=analogRead(34);
@@ -66,7 +68,9 @@ void handleLDR(){
 
 ### Reducing Key Size
 
-``` {#code:jsonkeys .json language="json" caption="Long vs Short Keys" label="code:jsonkeys"}
+<!-- ``` {#code:jsonkeys .json language="json" caption="Long vs Short Keys" label="code:jsonkeys"} -->
+
+``` cpp
 {"temperature":24.7,"humidity":60.2}
 {"t":24.7,"h":60.2}
 ```
@@ -118,7 +122,9 @@ Store computed values and reuse if request is frequent.
 
 ### Code Example
 
-``` {#code:caching .c++ language="C++" caption="ESP32 Caching Example" label="code:caching"}
+<!-- ``` {#code:caching .c++ language="C++" caption="ESP32 Caching Example" label="code:caching"} -->
+
+``` cpp
 unsigned long lastUpdate=0;
 String cachedJSON;
 
