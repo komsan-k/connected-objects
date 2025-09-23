@@ -60,3 +60,13 @@ This document explains the relationship between **LPWAN** technologies, focusing
 - **NB-IoT** → Reliable, licensed spectrum, better **indoor coverage**, but requires operator.  
 - **LTE-M** → Licensed spectrum, **supports mobility** and higher throughput, good for moving assets.  
 
+---
+
+## 📚 References
+1. LoRa Alliance. *LoRaWAN Specification*. [https://lora-alliance.org](https://lora-alliance.org)  
+2. Semtech Corporation. *LoRa Technology Overview*. [https://www.semtech.com/lora](https://www.semtech.com/lora)  
+3. 3GPP. *Release 13: Narrowband IoT (NB-IoT) and LTE-M*. [https://www.3gpp.org](https://www.3gpp.org)  
+4. Raza, U., Kulkarni, P., & Sooriyabandara, M. (2017). *Low Power Wide Area Networks: An Overview*. IEEE Communications Surveys & Tutorials, 19(2), 855–873.  
+5. Centenaro, M., Vangelista, L., Zanella, A., & Zorzi, M. (2016). *Long-range communications in unlicensed bands: The rising stars in the IoT and smart city scenarios*. IEEE Wireless Communications, 23(5), 60–67.  
+6. GSMA. *NB-IoT and LTE-M Deployment Guide to Basic Feature Set Requirements*. [https://www.gsma.com/iot](https://www.gsma.com/iot)  
+
