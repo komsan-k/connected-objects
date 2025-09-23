@@ -4,15 +4,6 @@ This document provides an overview of **Low-Power Wide-Area Network (LPWAN)** te
 
 ---
 
-## 📡 LPWAN Overview
-
-### Use Cases
-- **LoRa** → Smart agriculture, utilities, campus IoT, private/community networks.  
-- **NB-IoT** → Smart meters, parking sensors, environmental monitoring.  
-- **LTE-M** → Asset tracking, logistics, wearables, mobile IoT.  
-
----
-
 ## 🛠️ Recent Commercial LPWAN Products
 
 | Product | Features / Notes | URL |
