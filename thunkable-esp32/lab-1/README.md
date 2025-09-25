@@ -1,4 +1,4 @@
-# 🧪 Lab: Building a Mobile Messaging App with Thunkable and ESP32 over Wi-Fi
+# 🧪 Lab 1: Building a Mobile Messaging App with Thunkable and ESP32 over Wi-Fi
 
 ## 1. Objective
 
