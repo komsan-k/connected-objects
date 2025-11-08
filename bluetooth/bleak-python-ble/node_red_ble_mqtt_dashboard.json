@@ -1,0 +1,241 @@
+[
+  {
+    "id": "tab1",
+    "type": "tab",
+    "label": "BLE MQTT Dashboard",
+    "disabled": false,
+    "info": "Subscribe to iot/ble/esp32/frame and show on dashboard; publish commands to iot/ble/esp32/cmd"
+  },
+  {
+    "id": "ui_tab1",
+    "type": "ui_tab",
+    "name": "BLE",
+    "icon": "dashboard",
+    "order": 1
+  },
+  {
+    "id": "ui_group1",
+    "type": "ui_group",
+    "name": "Live Data & Control",
+    "tab": "ui_tab1",
+    "order": 1,
+    "disp": true,
+    "width": "12",
+    "collapse": false
+  },
+  {
+    "id": "mqtt_broker1",
+    "type": "mqtt-broker",
+    "name": "Local MQTT",
+    "broker": "localhost",
+    "port": "1883",
+    "clientid": ""
+  },
+  {
+    "id": "mqtt_in1",
+    "type": "mqtt in",
+    "z": "tab1",
+    "name": "BLE Frames",
+    "topic": "iot/ble/esp32/frame",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "mqtt_broker1",
+    "x": 140,
+    "y": 100,
+    "wires": [
+      [
+        "json1",
+        "text1",
+        "chart1",
+        "gauge_temp",
+        "gauge_hum"
+      ]
+    ]
+  },
+  {
+    "id": "json1",
+    "type": "json",
+    "z": "tab1",
+    "name": "Parse JSON",
+    "property": "payload",
+    "action": "",
+    "pretty": false,
+    "x": 330,
+    "y": 60,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "text1",
+    "type": "ui_text",
+    "z": "tab1",
+    "group": "ui_group1",
+    "order": 1,
+    "width": "12",
+    "height": "2",
+    "name": "Latest JSON",
+    "label": "Latest Frame",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 340,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "chart1",
+    "type": "ui_chart",
+    "z": "tab1",
+    "name": "Temperature",
+    "group": "ui_group1",
+    "order": 2,
+    "width": "12",
+    "height": "4",
+    "label": "Temperature over Time",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "ymin": "0",
+    "ymax": "60",
+    "removeOlder": 1,
+    "removeOlderPoints": "",
+    "removeOlderUnit": "3600",
+    "x": 350,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "gauge_temp",
+    "type": "ui_gauge",
+    "z": "tab1",
+    "name": "Temp (\u00b0C)",
+    "group": "ui_group1",
+    "order": 3,
+    "width": "6",
+    "height": "4",
+    "gtype": "gage",
+    "title": "Temperature (\u00b0C)",
+    "label": "\u00b0C",
+    "format": "{{msg.payload.temp}}",
+    "min": 0,
+    "max": 60,
+    "x": 350,
+    "y": 220,
+    "wires": []
+  },
+  {
+    "id": "gauge_hum",
+    "type": "ui_gauge",
+    "z": "tab1",
+    "name": "Humidity (%)",
+    "group": "ui_group1",
+    "order": 4,
+    "width": "6",
+    "height": "4",
+    "gtype": "gage",
+    "title": "Humidity (%)",
+    "label": "%",
+    "format": "{{msg.payload.hum}}",
+    "min": 0,
+    "max": 100,
+    "x": 360,
+    "y": 280,
+    "wires": []
+  },
+  {
+    "id": "ui_switch_led",
+    "type": "ui_switch",
+    "z": "tab1",
+    "name": "LED",
+    "label": "LED",
+    "group": "ui_group1",
+    "order": 5,
+    "width": "4",
+    "height": "2",
+    "passthru": true,
+    "decouple": "false",
+    "topic": "",
+    "style": "",
+    "onvalue": "1",
+    "onvalueType": "str",
+    "offvalue": "0",
+    "offvalueType": "str",
+    "x": 120,
+    "y": 360,
+    "wires": [
+      [
+        "fn_led"
+      ]
+    ]
+  },
+  {
+    "id": "fn_led",
+    "type": "function",
+    "z": "tab1",
+    "name": "Build LED JSON",
+    "func": "const v = (msg.payload === '1' || msg.payload === 1 || msg.payload === true) ? 1 : 0; msg.payload = JSON.stringify({led: v}); return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 310,
+    "y": 360,
+    "wires": [
+      [
+        "mqtt_out1"
+      ]
+    ]
+  },
+  {
+    "id": "ui_slider_period",
+    "type": "ui_slider",
+    "z": "tab1",
+    "name": "Period (ms)",
+    "label": "Period (ms)",
+    "group": "ui_group1",
+    "order": 6,
+    "width": "6",
+    "height": "2",
+    "passthru": true,
+    "outs": "all",
+    "topic": "",
+    "min": 200,
+    "max": 10000,
+    "step": 100,
+    "x": 130,
+    "y": 420,
+    "wires": [
+      [
+        "fn_period"
+      ]
+    ]
+  },
+  {
+    "id": "fn_period",
+    "type": "function",
+    "z": "tab1",
+    "name": "Build Period JSON",
+    "func": "const v = Number(msg.payload) || 2000; msg.payload = JSON.stringify({period_ms: v}); return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 330,
+    "y": 420,
+    "wires": [
+      [
+        "mqtt_out1"
+      ]
+    ]
+  },
+  {
+    "id": "mqtt_out1",
+    "type": "mqtt out",
+    "z": "tab1",
+    "name": "BLE Commands",
+    "topic": "iot/ble/esp32/cmd",
+    "qos": "0",
+    "retain": "false",
+    "broker": "mqtt_broker1",
+    "x": 520,
+    "y": 390,
+    "wires": []
+  }
+]
