@@ -153,7 +153,7 @@ Build a BLE-enabled temperature node using the **LM73 I²C sensor** and visualiz
 #include <BLEUtils.h>
 #include <BLEServer.h>
 
-#define LM73_ADDR 0x48
+#define LM73_ADDR 0x4D
 #define SERVICE_UUID        "e1f4046e-2a5a-4a5b-8ee3-7c2f31d5b5a1"
 #define CHARACTERISTIC_UUID "e1f4046f-2a5a-4a5b-8ee3-7c2f31d5b5a1"
 
