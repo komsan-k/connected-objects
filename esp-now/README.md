@@ -1,4 +1,4 @@
-# ESP-NOW Complete Tutorial for Beginners and IoT Developers
+# ESP-NOW Tutorial for Beginners and IoT Developers
 
 ## 📘 Introduction
 
