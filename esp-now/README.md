@@ -291,29 +291,19 @@ Enjoy building your ESP-NOW projects!
 1. **Espressif Systems**, *ESP-NOW User Guide*.  
    https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/esp_now.html  
 
-2. **Espressif Systems**, *ESP32 Technical Reference Manual*.  
-   https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf  
-
-3. **Espressif Systems**, *ESP-IDF Programming Guide*.  
+2. **Espressif Systems**, *ESP-IDF Programming Guide*.  
    https://github.com/espressif/esp-idf  
-
-4. **Espressif Systems**, *ESP32 Product Overview*.  
-   https://www.espressif.com/en/products/socs/esp32  
 
 ---
 
 ### Community Tutorials and Examples
-5. **Random Nerd Tutorials**, “Getting Started with ESP-NOW (ESP32/ESP8266).”  
+3. **Random Nerd Tutorials**, “Getting Started with ESP-NOW (ESP32/ESP8266).”  
    https://randomnerdtutorials.com/esp-now-esp32-arduino-ide/  
 
-6. **Espressif Forums**, “ESP-NOW Discussions and Examples.”  
-   https://esp32.com/  
-
-7. **Arduino-ESP32 GitHub Repository**  
+4. **Arduino-ESP32 GitHub Repository**  
    https://github.com/espressif/arduino-esp32  
 
-8. **ESP8266 Community Forum**  
-   https://www.esp8266.com  
+  
 
 ---
 
