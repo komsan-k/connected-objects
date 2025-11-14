@@ -40,8 +40,8 @@ Typical connections (ESP32 default I²C pins):
 
 - **LM73 VCC** → **3.3 V**
 - **LM73 GND** → **GND**
-- **LM73 SDA** → **GPIO 21**
-- **LM73 SCL** → **GPIO 22**
+- **LM73 SDA** → **GPIO 4**
+- **LM73 SCL** → **GPIO 5**
 - Address pins (if present on the module, e.g., AD0/AD1) → GND / VCC as per your module  
   (Adjust the I²C address in code accordingly; here we assume `0x4D`.)
 
@@ -148,11 +148,14 @@ Upload this to the **sensor node ESP32** (with LM73 connected):
 #include <esp_now.h>
 #include <Wire.h>
 
-#define LM73_ADDR 0x4D
-#define LM73_TEMP_REG 0x00
+// ====== LM73 I2C Configuration ======
+#define LM73_ADDR      0x4D     // I2C address of LM73 (adjust if needed)
+#define LM73_TEMP_REG  0x00     // Temperature register pointer
 
-uint8_t receiverMAC[] = {0x24, 0x6F, 0x28, 0xA1, 0xB2, 0xC3}; // CHANGE THIS
+// ====== Receiver ESP32 MAC Address ======
+uint8_t receiverMAC[] = {0x24, 0x6F, 0x28, 0xA1, 0xB2, 0xC3};   // <<< CHANGE THIS
 
+// ====== ESP-NOW Data Structure ======
 typedef struct struct_message {
   uint8_t  nodeId;
   float    temperatureC;
@@ -162,73 +165,83 @@ typedef struct struct_message {
 struct_message msg;
 uint32_t localCounter = 0;
 
+// ====== LM73 Temperature Read Function ======
 float readLM73Temperature() {
   Wire.beginTransmission(LM73_ADDR);
   Wire.write(LM73_TEMP_REG);
-  Wire.endTransmission(false);
+  Wire.endTransmission(false);   // Repeated start
 
   if (Wire.requestFrom(LM73_ADDR, (uint8_t)2) != 2) {
-    return NAN;
+    return NAN; // Sensor read error
   }
 
   uint8_t msb = Wire.read();
   uint8_t lsb = Wire.read();
 
   int16_t raw = (int16_t)((msb << 8) | lsb);
-  int16_t tempCode = raw >> 5;       // 11-bit default
-  float tempC = tempCode * 0.25f;
+
+  // LM73 default 11-bit resolution: bits 15..5 contain temperature
+  int16_t tempCode = raw >> 5;    // right-shift & sign-extend
+  float tempC = tempCode * 0.25f; // 0.25°C per LSB
 
   return tempC;
 }
 
+// ====== ESP-NOW Callback ======
 void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   Serial.print("Last send status: ");
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "✅ Success" : "❌ Fail");
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Success ✔️" : "Fail ❌");
 }
 
 void setup() {
   Serial.begin(115200);
+  delay(500);
 
-  // I²C
-  Wire.begin(21, 22);   // SDA=21, SCL=22 (adjust if needed)
+  // ====== Initialize I2C on custom pins SDA=4, SCL=5 ======
+  Wire.begin(4, 5);       // SDA = GPIO 4, SCL = GPIO 5
+  Serial.println("LM73 initialized on SDA=4, SCL=5");
 
-  // ESP-NOW requires STA mode
+  // ====== ESP-NOW Initialization ======
   WiFi.mode(WIFI_STA);
 
   if (esp_now_init() != ESP_OK) {
-    Serial.println("Error initializing ESP-NOW");
+    Serial.println("❌ ESP-NOW init failed!");
     return;
   }
 
   esp_now_register_send_cb(onDataSent);
 
+  // Register receiver peer
   esp_now_peer_info_t peerInfo = {};
   memcpy(peerInfo.peer_addr, receiverMAC, 6);
   peerInfo.channel = 0;
   peerInfo.encrypt = false;
 
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {
-    Serial.println("Failed to add peer");
+    Serial.println("❌ Failed to add ESP-NOW peer");
     return;
   }
+
+  Serial.println("✅ ESP-NOW Sender Ready");
 }
 
 void loop() {
   float tempC = readLM73Temperature();
 
-  msg.nodeId      = 1;
+  msg.nodeId = 1;              // <<< change for multiple sensor nodes
   msg.temperatureC = tempC;
-  msg.counter     = localCounter++;
+  msg.counter = localCounter++;
 
-  Serial.print("Sending temperature: ");
+  Serial.print("Sending Temperature: ");
   Serial.print(tempC);
   Serial.println(" °C");
 
   esp_err_t result = esp_now_send(receiverMAC, (uint8_t *)&msg, sizeof(msg));
+
   if (result == ESP_OK) {
-    Serial.println("📡 Packet queued");
+    Serial.println("📡 ESP-NOW packet sent");
   } else {
-    Serial.println("❌ Error sending the data");
+    Serial.println("❌ Error sending ESP-NOW data");
   }
 
   delay(1000);
