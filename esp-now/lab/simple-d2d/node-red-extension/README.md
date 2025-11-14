@@ -201,14 +201,6 @@ void loop() {
 4. Deploy
 5. Open dashboard: **http://localhost:1880/ui**
 
-### 🟦 **Node-RED Flow JSON** (ready to import)
-
-```
-[PASTE JSON FLOW HERE — OMITTED IN THIS MESSAGE FOR BREVITY]
-```
-
-*(The JSON is long — I will include it in the next message exactly as required.)*
-
 ---
 
 # ⚡ 7. Expected Dashboard
@@ -243,4 +235,3 @@ Students will understand:
 
 ---
 
-# 📘 END OF README
