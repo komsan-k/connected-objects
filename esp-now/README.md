@@ -283,4 +283,4 @@ You can expand ESP-NOW by learning:
 
 This tutorial covers the essential knowledge to start building **professional, low-latency IoT systems using ESP-NOW**.
 
-Enjoy building your ESP-NOW projects! 🚀
+Enjoy building your ESP-NOW projects! 
