@@ -317,18 +317,4 @@ Enjoy building your ESP-NOW projects!
 
 ---
 
-### Academic & Technical Literature
-9. X. Yang, et al., “Low Power and Low Latency Communications in IoT Using ESP-NOW,” *IEEE Internet of Things Journal*, 2021.
 
-10. S. Andreev, Y. Koucheryavy, “Energy-Efficient Wireless Networks for IoT Devices,” *IEEE Communications Surveys & Tutorials*, 2018.
-
-11. S. Mijailović, “Performance Evaluation of ESP-NOW for IoT Applications,” *International Journal of Embedded Systems*, 2020.
-
-12. B. Sathish, “Lightweight Secure Communication Techniques for IoT,” *Sensors*, Vol. 19, 2019.
-
----
-
-### Books
-13. M. Banzi, M. Shiloh, *Getting Started with Arduino: Wireless Extensions*, Make/O’Reilly, 2020.
-
-14. C. Pham, *Low-Power Wireless Communication for IoT Devices*, Springer, 2021.
