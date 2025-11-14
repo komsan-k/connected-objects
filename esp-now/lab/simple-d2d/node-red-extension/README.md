@@ -200,7 +200,211 @@ void loop() {
 3. Update MQTT broker if needed
 4. Deploy
 5. Open dashboard: **http://localhost:1880/ui**
+6. 
+### 🟦 **Node-RED Flow JSON** (ready to import)
 
+```
+[
+  {
+    "id": "tab-randomtemp",
+    "type": "tab",
+    "label": "ESP-NOW Random Temp Lab",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "mqtt-broker-randomtemp",
+    "type": "mqtt-broker",
+    "name": "MQTT Broker",
+    "broker": "broker.hivemq.com",
+    "port": "1883",
+    "tls": "",
+    "clientid": "",
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "willMsg": {}
+  },
+  {
+    "id": "ui-tab-randomtemp",
+    "type": "ui_tab",
+    "name": "ESP-NOW Temp Monitor",
+    "icon": "dashboard",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "ui-group-randomtemp",
+    "type": "ui_group",
+    "name": "Random Temperature",
+    "tab": "ui-tab-randomtemp",
+    "order": 1,
+    "disp": true,
+    "width": "6",
+    "collapse": false
+  },
+  {
+    "id": "mqtt-in-randomtemp",
+    "type": "mqtt in",
+    "z": "tab-randomtemp",
+    "name": "ESP-NOW Random Temp In",
+    "topic": "lab/espnow/randomTemp",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "mqtt-broker-randomtemp",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "x": 150,
+    "y": 80,
+    "wires": [
+      [
+        "json-parse-randomtemp",
+        "debug-raw-randomtemp"
+      ]
+    ]
+  },
+  {
+    "id": "json-parse-randomtemp",
+    "type": "json",
+    "z": "tab-randomtemp",
+    "name": "Parse JSON",
+    "property": "payload",
+    "action": "obj",
+    "pretty": false,
+    "x": 360,
+    "y": 80,
+    "wires": [
+      [
+        "fn-format-randomtemp",
+        "debug-parsed-randomtemp"
+      ]
+    ]
+  },
+  {
+    "id": "fn-format-randomtemp",
+    "type": "function",
+    "z": "tab-randomtemp",
+    "name": "Format for UI",
+    "func": "let tempC = msg.payload.tempC;\nlet counter = msg.payload.counter;\n\n// Text for UI\nmsg.payload = `Temp = ${tempC.toFixed(2)} °C  (cnt=${counter})`;\n\n// Clone for chart\nlet chartMsg = RED.util.cloneMessage(msg);\nchartMsg.topic = \"RandomTemp\";\nchartMsg.payload = tempC;  // chart Y value\n\nreturn [msg, chartMsg];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 580,
+    "y": 80,
+    "wires": [
+      [
+        "ui-text-randomtemp"
+      ],
+      [
+        "ui-chart-randomtemp"
+      ]
+    ]
+  },
+  {
+    "id": "ui-text-randomtemp",
+    "type": "ui_text",
+    "z": "tab-randomtemp",
+    "group": "ui-group-randomtemp",
+    "order": 1,
+    "width": "6",
+    "height": "1",
+    "name": "Latest Temperature",
+    "label": "Latest",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 830,
+    "y": 60,
+    "wires": []
+  },
+  {
+    "id": "ui-chart-randomtemp",
+    "type": "ui_chart",
+    "z": "tab-randomtemp",
+    "name": "Temperature Chart",
+    "group": "ui-group-randomtemp",
+    "order": 2,
+    "width": "6",
+    "height": "4",
+    "label": "Random Temp (°C)",
+    "chartType": "line",
+    "legend": "false",
+    "xformat": "HH:mm:ss",
+    "interpolate": "linear",
+    "nodata": "No data yet",
+    "dot": false,
+    "ymin": "15",
+    "ymax": "40",
+    "removeOlder": "1",
+    "removeOlderPoints": "",
+    "removeOlderUnit": "3600",
+    "cutout": 0,
+    "useOneColor": false,
+    "colors": [
+      "#1f77b4",
+      "#aec7e8",
+      "#ff7f0e",
+      "#2ca02c"
+    ],
+    "useOldStyle": false,
+    "x": 850,
+    "y": 120,
+    "wires": [
+      [],
+      []
+    ]
+  },
+  {
+    "id": "debug-raw-randomtemp",
+    "type": "debug",
+    "z": "tab-randomtemp",
+    "name": "Raw MQTT",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 360,
+    "y": 140,
+    "wires": []
+  },
+  {
+    "id": "debug-parsed-randomtemp",
+    "type": "debug",
+    "z": "tab-randomtemp",
+    "name": "Parsed JSON",
+    "active": false,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 600,
+    "y": 140,
+    "wires": []
+  }
+]
+
+```
 ---
 
 # ⚡ 7. Expected Dashboard
