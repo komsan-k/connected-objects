@@ -29,7 +29,7 @@ Labs included:
 ```
 3.3V ---[ LDR ]----●----[ 10kΩ ]--- GND
                    |
-                 GPIO34 (ADC)
+                 GPIO36 (ADC)
 ```
 
 ## 4. Get Receiver MAC Address
@@ -63,7 +63,7 @@ typedef struct struct_message {
 #include <WiFi.h>
 #include <esp_now.h>
 
-#define LDR_PIN 34
+#define LDR_PIN 36
 
 uint8_t receiverMAC[] = {0x24,0x6F,0x28,0xA1,0xB2,0xC3};
 
