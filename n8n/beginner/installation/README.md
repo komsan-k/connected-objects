@@ -1,4 +1,4 @@
-# 🚀 Installing n8n on Windows — The Cleanest & Easiest Guide
+# 🚀 Installing n8n on Windows
 
 This README explains **three simple ways** to install **n8n**, a powerful workflow automation tool, on a Windows machine.
 
