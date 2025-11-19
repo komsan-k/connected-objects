@@ -36,6 +36,23 @@ Upload this sketch to the **receiver ESP32**:
 
 ```cpp
 #include <WiFi.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(500);
+
+  WiFi.mode(WIFI_STA);      // ensure station mode
+  delay(100);
+
+  Serial.print("ESP32 MAC Address: ");
+  Serial.println(WiFi.macAddress());
+}
+
+void loop() {}
+```
+<!---
+```cpp
+#include <WiFi.h>
 #include <esp_wifi.h>
 #include <esp_system.h>
 #include <esp_bt.h>
@@ -75,7 +92,7 @@ void setup() {
 
 void loop() {}
 ```
-
+--->
 Open **Serial Monitor** → Copy the MAC address:
 
 Example:
