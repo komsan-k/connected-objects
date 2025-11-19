@@ -67,7 +67,7 @@ Paste this into the sender code.
 #include <esp_now.h>
 
 // Replace with RECEIVER MAC Address
-uint8_t receiverMAC[] = {0x24, 0x6F, 0x28, 0xA1, 0xB2, 0xC3};
+uint8_t receiverMAC[] = {0x40, 0x91, 0x51, 0x37, 0x0A, 0x08}; // 40:91:51:37:0A:0A  40:91:51:37:0a:08
 
 typedef struct struct_message {
   float tempC;
@@ -77,9 +77,18 @@ typedef struct struct_message {
 struct_message msg;
 uint32_t cnt = 0;
 
-void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+// ---------------- SEND CALLBACK (FINAL) ----------------
+void onDataSent(const esp_now_send_info_t *info, esp_now_send_status_t status) {
   Serial.print("Send Status: ");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "SUCCESS" : "FAIL");
+  // If you ever want MAC:
+  // char macStr[18];
+  // snprintf(macStr, sizeof(macStr),
+  //          "%02X:%02X:%02X:%02X:%02X:%02X",
+  //          info->des_addr[0], info->des_addr[1], info->des_addr[2],
+  //          info->des_addr[3], info->des_addr[4], info->des_addr[5]);
+  // Serial.print("To: ");
+  // Serial.println(macStr);
 }
 
 void setup() {
@@ -91,6 +100,9 @@ void setup() {
     return;
   }
 
+  Serial.println("Hello! ESP-NOW Sender!");
+
+  // Register callback – matches esp_now_send_cb_t in your header
   esp_now_register_send_cb(onDataSent);
 
   esp_now_peer_info_t peerInfo = {};
@@ -106,14 +118,19 @@ void setup() {
 
 void loop() {
   float temp = random(200, 300) / 10.0; // 20.0–30.0 °C
-  msg.tempC = temp;
+  msg.tempC  = temp;
   msg.counter = cnt++;
 
   Serial.print("Sending Temp: ");
   Serial.print(temp);
   Serial.println(" °C");
 
-  esp_now_send(receiverMAC, (uint8_t *)&msg, sizeof(msg));
+  esp_err_t result = esp_now_send(receiverMAC, (uint8_t *)&msg, sizeof(msg));
+
+  if (result != ESP_OK) {
+    Serial.print("esp_now_send error: ");
+    Serial.println(result);
+  }
 
   delay(1000);
 }
@@ -124,6 +141,7 @@ void loop() {
 # 📥 5. Step 3 — ESP-NOW Receiver Code
 
 ```cpp
+
 #include <WiFi.h>
 #include <esp_now.h>
 
@@ -134,7 +152,7 @@ typedef struct struct_message {
 
 struct_message incoming;
 
-void onDataRecv(const uint8_t *mac, const uint8_t *data, int len) {
+void onDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
   memcpy(&incoming, data, sizeof(incoming));
 
   Serial.println("📥 Received Data:");
@@ -155,6 +173,9 @@ void setup() {
     Serial.println("ESP-NOW Init Failed");
     return;
   }
+
+  Serial.println(" Hello ESP32-NOW !!! ");
+  Serial.println(WiFi.macAddress());
 
   esp_now_register_recv_cb(onDataRecv);
 }
