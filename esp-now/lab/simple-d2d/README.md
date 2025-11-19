@@ -36,11 +36,41 @@ Upload this sketch to the **receiver ESP32**:
 
 ```cpp
 #include <WiFi.h>
+#include <esp_wifi.h>
+#include <esp_system.h>
+#include <esp_bt.h>
 
 void setup() {
   Serial.begin(115200);
+  delay(1000);
+
+  // WiFi station mode
   WiFi.mode(WIFI_STA);
+  delay(100);
+
+  // ----- WiFi Station MAC -----
+  Serial.print("WiFi STA MAC: ");
   Serial.println(WiFi.macAddress());
+
+  // ----- WiFi AP MAC -----
+  WiFi.mode(WIFI_AP);
+  delay(100);
+  Serial.print("WiFi AP  MAC: ");
+  Serial.println(WiFi.softAPmacAddress());
+
+  // ----- Base MAC (factory burned MAC) -----
+  uint8_t baseMac[6];
+  esp_read_mac(baseMac, ESP_MAC_WIFI_STA);  
+  Serial.printf("Base MAC     : %02X:%02X:%02X:%02X:%02X:%02X\n",
+                baseMac[0], baseMac[1], baseMac[2],
+                baseMac[3], baseMac[4], baseMac[5]);
+
+  // ----- BLE MAC -----
+  uint8_t bleMac[6];
+  esp_read_mac(bleMac, ESP_MAC_BT);
+  Serial.printf("BLE MAC      : %02X:%02X:%02X:%02X:%02X:%02X\n",
+                bleMac[0], bleMac[1], bleMac[2],
+                bleMac[3], bleMac[4], bleMac[5]);
 }
 
 void loop() {}
