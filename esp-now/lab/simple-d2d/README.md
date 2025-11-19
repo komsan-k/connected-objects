@@ -77,18 +77,10 @@ typedef struct struct_message {
 struct_message msg;
 uint32_t cnt = 0;
 
-// ---------------- SEND CALLBACK (FINAL) ----------------
+// ---------------- SEND CALLBACK ----------------
 void onDataSent(const esp_now_send_info_t *info, esp_now_send_status_t status) {
   Serial.print("Send Status: ");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "SUCCESS" : "FAIL");
-  // If you ever want MAC:
-  // char macStr[18];
-  // snprintf(macStr, sizeof(macStr),
-  //          "%02X:%02X:%02X:%02X:%02X:%02X",
-  //          info->des_addr[0], info->des_addr[1], info->des_addr[2],
-  //          info->des_addr[3], info->des_addr[4], info->des_addr[5]);
-  // Serial.print("To: ");
-  // Serial.println(macStr);
 }
 
 void setup() {
