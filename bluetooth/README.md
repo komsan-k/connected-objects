@@ -138,8 +138,8 @@ Build a BLE-enabled temperature node using the **LM73 I²C sensor** and visualiz
 |-----------|-----------|
 | **VCC** | 3.3V |
 | **GND** | GND |
-| **SCL** | GPIO 22 |
-| **SDA** | GPIO 21 |
+| **SCL** | GPIO 5 |
+| **SDA** | GPIO 4 |
 
 > The LM73 communicates via I²C at address `0x48`.
 
