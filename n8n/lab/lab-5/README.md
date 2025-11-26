@@ -128,8 +128,3 @@ Open your dashboard at:
 4. Add auto-refresh script into HTML.  
 
 ---
-
-## 8. Author
-Dr. Komsan Kanjanasit  
-College of Computing, Prince of Songkla University  
-Thailand  
